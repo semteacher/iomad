@@ -35,8 +35,17 @@ require_once($CFG->dirroot.'/local/iomad_settings/certificate/mod_form_lib.php')
 class mod_iomadcertificate_mod_form extends moodleform_mod {
 
     function definition() {
-        global $CFG;
+        global $CFG, $DB;
 
+        $certvalidvalidlength=0;
+        if ($iomaddetails = $DB->get_record('iomad_courses', array('courseid' => $this->_course->id))) {
+            var_dump($this->_course->id);
+            var_dump($iomaddetails);
+            $certvalidvalidlength = $iomaddetails->validlength;
+        }
+        //var_dump($this);
+
+        
         $mform =& $this->_form;
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
@@ -78,6 +87,18 @@ class mod_iomadcertificate_mod_form extends moodleform_mod {
             $mform->setDefault('reportcert', 0);
             $mform->addHelpButton('reportcert', 'reportcert', 'iomadcertificate');
         }
+        
+        //flywestwood
+        $mform->addElement('text', 'validinterval', get_string('certvalidinterval', 'iomadcertificate'), array('size'=>'3'));
+        $mform->setType('validinterval', PARAM_INT);
+        $mform->setDefault('validinterval', $certvalidvalidlength);
+        $mform->addHelpButton('validinterval', 'certvalidinterval', 'iomadcertificate');
+
+        //flywestwood
+        $expireemailoptions = array( 0 => get_string('teacher', 'iomadcertificate'), 1 => get_string('student', 'iomadcertificate'), 2 => get_string('teacherandstudent', 'iomadcertificate'));
+        $mform->addElement('select', 'expireemail', get_string('expireemail', 'iomadcertificate'), $expireemailoptions);
+        $mform->setDefault('expireemail', 2);
+        $mform->addHelpButton('expireemail', 'expireemail', 'iomadcertificate');        
 
         $mform->addElement('text', 'requiredtime', get_string('coursetimereq', 'iomadcertificate'), array('size'=>'3'));
         $mform->setType('requiredtime', PARAM_INT);
@@ -98,6 +119,11 @@ class mod_iomadcertificate_mod_form extends moodleform_mod {
         $mform->setDefault('datefmt', 0);
         $mform->addHelpButton('datefmt', 'datefmt', 'iomadcertificate');
 
+        //flywestwood
+        $mform->addElement('select', 'printnexpiredate', get_string('printnexpiredate', 'iomadcertificate'), $ynoptions);
+        $mform->setDefault('printnexpiredate', 1);
+        $mform->addHelpButton('printnexpiredate', 'printnexpiredate', 'iomadcertificate');
+        
         $mform->addElement('select', 'printnumber', get_string('printnumber', 'iomadcertificate'), $ynoptions);
         $mform->setDefault('printnumber', 0);
         $mform->addHelpButton('printnumber', 'printnumber', 'iomadcertificate');
