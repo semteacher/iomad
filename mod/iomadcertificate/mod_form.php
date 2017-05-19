@@ -39,8 +39,8 @@ class mod_iomadcertificate_mod_form extends moodleform_mod {
 
         $certvalidvalidlength=0;
         if ($iomaddetails = $DB->get_record('iomad_courses', array('courseid' => $this->_course->id))) {
-            var_dump($this->_course->id);
-            var_dump($iomaddetails);
+            //var_dump($this->_course->id);
+            //var_dump($iomaddetails);
             $certvalidvalidlength = $iomaddetails->validlength;
         }
         //var_dump($this);
