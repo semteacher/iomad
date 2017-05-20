@@ -37,14 +37,13 @@ class mod_iomadcertificate_mod_form extends moodleform_mod {
     function definition() {
         global $CFG, $DB;
 
-        $certvalidvalidlength=0;
+        // set cert default valid duration
+        $certvalidvalidlength = 365; 
         if ($iomaddetails = $DB->get_record('iomad_courses', array('courseid' => $this->_course->id))) {
             //var_dump($this->_course->id);
             //var_dump($iomaddetails);
             $certvalidvalidlength = $iomaddetails->validlength;
         }
-        //var_dump($this);
-
         
         $mform =& $this->_form;
 
@@ -111,8 +110,6 @@ class mod_iomadcertificate_mod_form extends moodleform_mod {
         $mform->setDefault('expireemail', 2);
         $mform->addHelpButton('expireemail', 'expireemail', 'iomadcertificate');
         $mform->disabledIf('expireemail', 'enablecertexpire', 'eq', 0);
-
-
         
         $mform->addElement('select', 'printnexpiredate', get_string('printnexpiredate', 'iomadcertificate'), $ynoptions);
         $mform->setDefault('printnexpiredate', 1);
@@ -220,6 +217,11 @@ class mod_iomadcertificate_mod_form extends moodleform_mod {
         if ((!is_number($data['requiredtime']) || $data['requiredtime'] < 0)) {
             $errors['requiredtime'] = get_string('requiredtimenotvalid', 'iomadcertificate');
         }
+        
+        // Check that the cert valid duration entered is valid
+        if ((!is_number($data['validinterval']) || $data['validinterval'] <= 0)) {
+            $errors['validinterval'] = get_string('requiredtimenotvalid', 'iomadcertificate');
+        }        
 
         return $errors;
     }
