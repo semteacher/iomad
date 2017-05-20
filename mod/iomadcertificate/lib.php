@@ -932,6 +932,45 @@ function iomadcertificate_get_date_options() {
 }
 
 /**
+ * Search through all the modules for valid intervals for mod_form.
+ *
+ * @return array
+ */
+function iomadcertificate_get_validinterval_options() {
+    $validintervaloptions['30'] = get_string('valid30days', 'iomadcertificate');
+    $validintervaloptions['365'] = get_string('valid1year', 'iomadcertificate');
+    $validintervaloptions['730'] = get_string('valid2years', 'iomadcertificate');
+
+    return $validintervaloptions;
+}
+
+/**
+ * Search through all the modules for certificate expiration and expiration reminder email`s recipients for mod_form.
+ *
+ * @return array
+ */
+function iomadcertificate_get_expireemailrecipient_options() {
+    $expireemailrecipientoptions['0'] = get_string('no');
+    $expireemailrecipientoptions['1'] = get_string('teacher', 'iomadcertificate');
+    $expireemailrecipientoptions['2'] = get_string('student', 'iomadcertificate');
+    $expireemailrecipientoptions['3'] = get_string('teacherandstudent', 'iomadcertificate');
+
+    return $expireemailrecipientoptions;
+}
+
+/**
+ * Search through all the modules for reminder about certificate expiration for mod_form.
+ *
+ * @return array
+ */
+function iomadcertificate_get_expireemailreminde_options() {
+    $expireemailremindeoptions['7'] = get_string('expiredin7days', 'iomadcertificate');
+    $expireemailremindeoptions['30'] = get_string('expiredin30days', 'iomadcertificate');
+
+    return $expireemailremindeoptions;
+}
+
+/**
  * Fetch all grade categories from the specified course.
  *
  * @param int $courseid the course id
