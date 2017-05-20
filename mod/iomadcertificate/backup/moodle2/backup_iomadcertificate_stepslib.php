@@ -42,12 +42,12 @@ class backup_iomadcertificate_activity_structure_step extends backup_activity_st
             'savecert', 'reportcert', 'delivery', 'iomadcertificatetype', 'orientation',
             'borderstyle', 'bordercolor', 'printwmark', 'printdate', 'datefmt', 'printnumber',
             'printgrade', 'gradefmt', 'printoutcome', 'printhours', 'printteacher', 'customtext',
-            'printsignature', 'printseal', 'timecreated', 'timemodified'));
+            'printsignature', 'printseal', 'timecreated', 'timemodified', 'customtext2', 'customtext3', 'enablecertexpire', 'validinterval', 'valid2monthend', 'expireemailnotify', 'expireemailreminde', 'expireemail', 'printnexpiredate'));
 
         $issues = new backup_nested_element('issues');
 
         $issue = new backup_nested_element('issue', array('id'), array(
-            'iomadcertificateid', 'userid', 'timecreated', 'code'));
+            'iomadcertificateid', 'userid', 'timecreated', 'code', 'timeexpiried'));
 
         // Build the tree
         $iomadcertificate->add_child($issues);
