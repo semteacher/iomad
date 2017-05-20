@@ -38,12 +38,12 @@ class mod_iomadcertificate_mod_form extends moodleform_mod {
         global $CFG, $DB;
 
         // set cert default valid duration
-        $certvalidvalidlength = 365; 
-        if ($iomaddetails = $DB->get_record('iomad_courses', array('courseid' => $this->_course->id))) {
+        //$certvalidvalidlength = 365; 
+        //if ($iomaddetails = $DB->get_record('iomad_courses', array('courseid' => $this->_course->id))) {
             //var_dump($this->_course->id);
             //var_dump($iomaddetails);
-            $certvalidvalidlength = $iomaddetails->validlength;
-        }
+        //    $certvalidvalidlength = $iomaddetails->validlength;
+        //}
         
         $mform =& $this->_form;
 
@@ -91,23 +91,44 @@ class mod_iomadcertificate_mod_form extends moodleform_mod {
         $mform->setType('requiredtime', PARAM_INT);
         $mform->addHelpButton('requiredtime', 'coursetimereq', 'iomadcertificate');        
         
-        // flywestwood
-        // Expire options
+        // Expire options - flywestwood
         $mform->addElement('header', 'expireoptions', get_string('expireoptions', 'iomadcertificate'));
 
         $mform->addElement('select', 'enablecertexpire', get_string('enablecertexpire', 'iomadcertificate'), $ynoptions);
         $mform->setDefault('enablecertexpire', 1);
         $mform->addHelpButton('enablecertexpire', 'enablecertexpire', 'iomadcertificate');
         
-        $mform->addElement('text', 'validinterval', get_string('certvalidinterval', 'iomadcertificate'), array('size'=>'3'));
-        $mform->setType('validinterval', PARAM_INT);
-        $mform->setDefault('validinterval', $certvalidvalidlength);
+        //$mform->addElement('text', 'validinterval', get_string('certvalidinterval', 'iomadcertificate'), array('size'=>'3'));
+        //$mform->setType('validinterval', PARAM_INT);
+        $validintervaloptions = iomadcertificate_get_validinterval_options();
+        $mform->addElement('select', 'validinterval', get_string('validinterval', 'iomadcertificate'), $validintervaloptions);
+        $mform->setDefault('validinterval', 365);
         $mform->addHelpButton('validinterval', 'certvalidinterval', 'iomadcertificate');
         $mform->disabledIf('validinterval', 'enablecertexpire', 'eq', 0);
 
-        $expireemailoptions = array( 0 => get_string('teacher', 'iomadcertificate'), 1 => get_string('student', 'iomadcertificate'), 2 => get_string('teacherandstudent', 'iomadcertificate'));
-        $mform->addElement('select', 'expireemail', get_string('expireemail', 'iomadcertificate'), $expireemailoptions);
-        $mform->setDefault('expireemail', 2);
+        $mform->addElement('select', 'valid2monthend', get_string('valid2monthend', 'iomadcertificate'), $ynoptions);
+        $mform->setDefault('valid2monthend', 1);
+        $mform->addHelpButton('valid2monthend', 'valid2monthend', 'iomadcertificate');
+        $mform->disabledIf('valid2monthend', 'enablecertexpire', 'eq', 0);
+        $mform->disabledIf('valid2monthend', 'validinterval', 'eq', 30);
+        
+        $expireemailnotifyrecipientoptions = iomadcertificate_get_expireemailrecipient_options();
+        $mform->addElement('select', 'expireemailnotify', get_string('expireemailnotify', 'iomadcertificate'), $expireemailnotifyrecipientoptions);
+        $mform->setDefault('expireemailnotify', 3);
+        $mform->addHelpButton('expireemailnotify', 'expireemailnotify', 'iomadcertificate');
+        $mform->disabledIf('expireemailnotify', 'enablecertexpire', 'eq', 0);
+        
+        $expireemailremindeoptions = iomadcertificate_get_expireemailreminde_options();
+        $mform->addElement('select', 'expireemailreminde', get_string('expireemailreminde', 'iomadcertificate'), $expireemailremindeoptions);
+        $mform->setDefault('expireemailreminde', 30);
+        $mform->addHelpButton('expireemailreminde', 'expireemailreminde', 'iomadcertificate');
+        $mform->disabledIf('expireemailreminde', 'expireemailnotify', 'eq', 0);
+        $mform->disabledIf('expireemailreminde', 'enablecertexpire', 'eq', 0);
+        
+        //$expireemailoptions = array( 0 => get_string('teacher', 'iomadcertificate'), 1 => get_string('student', 'iomadcertificate'), 2 => get_string('teacherandstudent', 'iomadcertificate'));
+        $expireemailrecipientoptions = iomadcertificate_get_expireemailrecipient_options();
+        $mform->addElement('select', 'expireemail', get_string('expireemail', 'iomadcertificate'), $expireemailrecipientoptions);
+        $mform->setDefault('expireemail', 3);
         $mform->addHelpButton('expireemail', 'expireemail', 'iomadcertificate');
         $mform->disabledIf('expireemail', 'enablecertexpire', 'eq', 0);
         
@@ -219,9 +240,9 @@ class mod_iomadcertificate_mod_form extends moodleform_mod {
         }
         
         // Check that the cert valid duration entered is valid
-        if ((!is_number($data['validinterval']) || $data['validinterval'] <= 0)) {
-            $errors['validinterval'] = get_string('requiredtimenotvalid', 'iomadcertificate');
-        }        
+        //if ((!is_number($data['validinterval']) || $data['validinterval'] <= 0)) {
+        //    $errors['validinterval'] = get_string('requiredtimenotvalid', 'iomadcertificate');
+        //}        
 
         return $errors;
     }
