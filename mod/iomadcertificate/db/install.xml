@@ -38,9 +38,12 @@
         <FIELD NAME="customtext2" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="customtext3" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="enablecertexpire" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="validinterval" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="365" SEQUENCE="false"/>
+        <FIELD NAME="valid2monthend" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="expireemailnotify" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="3" SEQUENCE="false"/>
+        <FIELD NAME="expireemailreminde" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="30" SEQUENCE="false"/>
+        <FIELD NAME="expireemail" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="3" SEQUENCE="false"/>        
         <FIELD NAME="printnexpiredate" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
-        <FIELD NAME="expireemail" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="2" SEQUENCE="false"/>
-        <FIELD NAME="validinterval" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for iomadcertificate"/>
@@ -53,6 +56,7 @@
         <FIELD NAME="iomadcertificateid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="code" TYPE="char" LENGTH="40" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timeexpiried" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for iomadcertificate_issues"/>
