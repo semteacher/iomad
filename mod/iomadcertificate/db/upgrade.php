@@ -534,7 +534,16 @@ function xmldb_iomadcertificate_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2015111601, 'iomadcertificate');
     }
     
-    if ($oldversion < 2017051901) {
+    if ($oldversion < 2017052003) {
+        
+        // Define field enablecertexpire to be added to iomadcertificate settings.
+        $table = new xmldb_table('iomadcertificate');
+        $field = new xmldb_field('enablecertexpire', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 1);
+        
+        // Conditionally launch add field printnexpiredate.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
         
         // Define field printnexpiredate to be added to iomadcertificate settings.
         $table = new xmldb_table('iomadcertificate');
@@ -556,7 +565,7 @@ function xmldb_iomadcertificate_upgrade($oldversion=0) {
 
         // Define field validinterval to be added to iomadcertificate settings.
         $table = new xmldb_table('iomadcertificate');
-        $field = new xmldb_field('validinterval', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0);
+        $field = new xmldb_field('validinterval', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null);
         
         // Conditionally launch add field validinterval.
         if (!$dbman->field_exists($table, $field)) {
@@ -564,7 +573,7 @@ function xmldb_iomadcertificate_upgrade($oldversion=0) {
         }
         
         // Iomadcertificate savepoint reached.
-        upgrade_mod_savepoint(true, 2017051901, 'iomadcertificate');        
+        upgrade_mod_savepoint(true, 2017052003, 'iomadcertificate');        
     }
     
     return true;
