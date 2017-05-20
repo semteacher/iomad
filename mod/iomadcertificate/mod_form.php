@@ -88,22 +88,37 @@ class mod_iomadcertificate_mod_form extends moodleform_mod {
             $mform->addHelpButton('reportcert', 'reportcert', 'iomadcertificate');
         }
         
-        //flywestwood
+        $mform->addElement('text', 'requiredtime', get_string('coursetimereq', 'iomadcertificate'), array('size'=>'3'));
+        $mform->setType('requiredtime', PARAM_INT);
+        $mform->addHelpButton('requiredtime', 'coursetimereq', 'iomadcertificate');        
+        
+        // flywestwood
+        // Expire options
+        $mform->addElement('header', 'expireoptions', get_string('expireoptions', 'iomadcertificate'));
+
+        $mform->addElement('select', 'enablecertexpire', get_string('enablecertexpire', 'iomadcertificate'), $ynoptions);
+        $mform->setDefault('enablecertexpire', 1);
+        $mform->addHelpButton('enablecertexpire', 'enablecertexpire', 'iomadcertificate');
+        
         $mform->addElement('text', 'validinterval', get_string('certvalidinterval', 'iomadcertificate'), array('size'=>'3'));
         $mform->setType('validinterval', PARAM_INT);
         $mform->setDefault('validinterval', $certvalidvalidlength);
         $mform->addHelpButton('validinterval', 'certvalidinterval', 'iomadcertificate');
+        $mform->disabledIf('validinterval', 'enablecertexpire', 'eq', 0);
 
-        //flywestwood
         $expireemailoptions = array( 0 => get_string('teacher', 'iomadcertificate'), 1 => get_string('student', 'iomadcertificate'), 2 => get_string('teacherandstudent', 'iomadcertificate'));
         $mform->addElement('select', 'expireemail', get_string('expireemail', 'iomadcertificate'), $expireemailoptions);
         $mform->setDefault('expireemail', 2);
-        $mform->addHelpButton('expireemail', 'expireemail', 'iomadcertificate');        
+        $mform->addHelpButton('expireemail', 'expireemail', 'iomadcertificate');
+        $mform->disabledIf('expireemail', 'enablecertexpire', 'eq', 0);
 
-        $mform->addElement('text', 'requiredtime', get_string('coursetimereq', 'iomadcertificate'), array('size'=>'3'));
-        $mform->setType('requiredtime', PARAM_INT);
-        $mform->addHelpButton('requiredtime', 'coursetimereq', 'iomadcertificate');
 
+        
+        $mform->addElement('select', 'printnexpiredate', get_string('printnexpiredate', 'iomadcertificate'), $ynoptions);
+        $mform->setDefault('printnexpiredate', 1);
+        $mform->addHelpButton('printnexpiredate', 'printnexpiredate', 'iomadcertificate');
+        $mform->disabledIf('printnexpiredate', 'enablecertexpire', 'eq', 0);
+        
         // Text Options
         $mform->addElement('header', 'textoptions', get_string('textoptions', 'iomadcertificate'));
 
@@ -118,11 +133,6 @@ class mod_iomadcertificate_mod_form extends moodleform_mod {
         $mform->addElement('select', 'datefmt', get_string('datefmt', 'iomadcertificate'), $dateformatoptions);
         $mform->setDefault('datefmt', 0);
         $mform->addHelpButton('datefmt', 'datefmt', 'iomadcertificate');
-
-        //flywestwood
-        $mform->addElement('select', 'printnexpiredate', get_string('printnexpiredate', 'iomadcertificate'), $ynoptions);
-        $mform->setDefault('printnexpiredate', 1);
-        $mform->addHelpButton('printnexpiredate', 'printnexpiredate', 'iomadcertificate');
         
         $mform->addElement('select', 'printnumber', get_string('printnumber', 'iomadcertificate'), $ynoptions);
         $mform->setDefault('printnumber', 0);
