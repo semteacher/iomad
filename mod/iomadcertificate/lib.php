@@ -652,17 +652,9 @@ function iomadcertificate_get_issue($course, $user, $iomadcertificate, $cm) {
     $certissue->code = iomadcertificate_generate_code();
     $certissue->timecreated =  time();
     
+    // add cert expiration date - flywestwood
     if ($iomadcertificate->enablecertexpire == 1) {
-                    //TODO: make a function for: add validity interval
-                //var_dump($certissue->timecreated);
-//                date_add($certissue->timecreated, date_interval_create_from_date_string(strval($iomadcertificate->validinterval) + ' days'));
-                //var_dump($certissue->timecreated);
-                //TODO: make a function for: add validity interval
-                $certissue->timeexpiried = $certissue->timecreated + strtotime(strval($iomadcertificate->validinterval) . ' days');
-                //var_dump(userdate($date));
-                if ($iomadcertificate->valid2monthend){
-                    $certissue->timeexpiried = strtotime(date('Y-m-t',$certissue->timecreated));
-                }                
+        $certissue->timeexpiried = iomadcertificate_get_expiredate_value($iomadcertificate, $certissue->timecreated);
     }
     
     $certissue->id = $DB->insert_record('iomadcertificate_issues', $certissue);
@@ -1234,7 +1226,7 @@ function iomadcertificate_get_expiredate($iomadcertificate, $certrecord, $course
         $userid = $USER->id;
     }
 
-    // Set iomadcertificate date to current time, can be overwritten later
+    // Set iomadcertificate expired date to user expired time, can be overwritten later
     $date = $certrecord->timeexpiried;
 
     if ($iomadcertificate->printdate == '2') {
@@ -1246,29 +1238,16 @@ function iomadcertificate_get_expiredate($iomadcertificate, $certrecord, $course
         // Do we have a date on the tracking tables.
         $certname = rtrim($iomadcertificate->name, '.');
         $filename = clean_filename("$certname.pdf");
-    //var_dump($iomadcertificate->printdate);
-    //var_dump($certrecord);
-    //var_dump($DB->get_record_sql($sql, array('userid' => $userid, 'courseid' => $course->id)));
         if (empty($certrecord->trackid) && $timecompleted = $DB->get_record_sql($sql, array('userid' => $userid, 'courseid' => $course->id))) {
             if (!empty($timecompleted->timecompleted)) {
-                $date = $timecompleted->timecompleted;
-                //TODO: make a function for: add validity interval
-                $date = strtotime($date) + strtotime(strval($iomadcertificate->validinterval) . ' days');
-                //var_dump(userdate($date));
-                if ($iomadcertificate->valid2monthend){
-                    $date = strtotime(date('Y-m-t',$date));
-                }
+                $date = iomadcertificate_get_expiredate_value($iomadcertificate, $timecompleted->timecompleted);
+                //$date = $timecompleted->timecompleted;
             }
         }
     } else if ($iomadcertificate->printdate > 2) {
         if ($modinfo = iomadcertificate_get_mod_grade($course, $iomadcertificate->printdate, $userid)) {
-            $date = $modinfo->dategraded;
-                //TODO: make a function for: add validity interval
-                $date = strtotime($date) + strtotime(strval($iomadcertificate->validinterval) . ' days');
-                //var_dump(userdate($date));
-                if ($iomadcertificate->valid2monthend){
-                    $date = strtotime(date('Y-m-t',$date));
-                }            
+            $date = iomadcertificate_get_expiredate_value($iomadcertificate, $modinfo->dategraded);
+            //$date = $modinfo->dategraded;
         }
     }
     if ($iomadcertificate->printdate > 0) {
@@ -1289,6 +1268,21 @@ function iomadcertificate_get_expiredate($iomadcertificate, $certrecord, $course
     }
 
     return '';
+}
+
+/**
+ * Returns the certificate expiration date value based on cert issue (activity completion) date.
+ *
+ * @param stdClass $iomadcertificate
+ * @param int $issuedate
+ * @return int the date
+ */
+function iomadcertificate_get_expiredate_value($iomadcertificate, $issuedate) {
+    $expiredate = strtotime($issuedate) + strtotime(strval($iomadcertificate->validinterval) . ' days');
+    if ($iomadcertificate->valid2monthend){
+        $expiredate = strtotime(date('Y-m-t',$expiredate));
+    }    
+    return $expiredate;
 }
 
 /**
