@@ -737,7 +737,7 @@ function iomadcertificate_get_issues($iomadcertificateid, $sort="ci.timecreated 
     // Get all the users that have iomadcertificates issued, should only be one issue per user for a iomadcertificate
     $allparams = $conditionsparams + array('iomadcertificateid' => $iomadcertificateid);
 
-    $users = $DB->get_records_sql("SELECT u.*, ci.code, ci.timecreated
+    $users = $DB->get_records_sql("SELECT u.*, ci.code, ci.timecreated, ci.timeexpiried 
                                    FROM {user} u
                                    INNER JOIN {iomadcertificate_issues} ci
                                    ON u.id = ci.userid
@@ -791,7 +791,14 @@ function iomadcertificate_print_attempts($course, $iomadcertificate, $attempts) 
     $table->class = 'generaltable';
     $table->head = array(get_string('issued', 'iomadcertificate'));
     $table->align = array('left');
-    $table->attributes = array("style" => "width:20%; margin:auto");
+    $table->attributes = array("style" => "width:30%; margin:auto");
+    // expiredate column header - flyeastwood
+    if ($iomadcertificate->enablecertexpire == 1) {
+        $table->head[] = get_string('expiried', 'iomadcertificate');
+        $table->align[] = 'left';
+        $table->attributes = array("style" => "width:30%; margin:auto");
+    }
+    
     $gradecolumn = $iomadcertificate->printgrade;
     if ($gradecolumn) {
         $table->head[] = get_string('grade');
@@ -805,7 +812,12 @@ function iomadcertificate_print_attempts($course, $iomadcertificate, $attempts) 
         // prepare strings for time taken and date completed
         $datecompleted = userdate($attempt->timecreated);
         $row[] = $datecompleted;
-
+        // expiredate value - flyeastwood
+        if ($iomadcertificate->enablecertexpire == 1) {
+            $dateexpired = userdate($attempt->timeexpiried);
+            $row[] = $dateexpired;
+        }
+        
         if ($gradecolumn) {
             $attemptgrade = iomadcertificate_get_grade($iomadcertificate, $course);
             $row[] = $attemptgrade;
