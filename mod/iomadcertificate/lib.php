@@ -651,6 +651,20 @@ function iomadcertificate_get_issue($course, $user, $iomadcertificate, $cm) {
     $certissue->userid = $user->id;
     $certissue->code = iomadcertificate_generate_code();
     $certissue->timecreated =  time();
+    
+    if ($iomadcertificate->enablecertexpire == 1) {
+                    //TODO: make a function for: add validity interval
+                //var_dump($certissue->timecreated);
+//                date_add($certissue->timecreated, date_interval_create_from_date_string(strval($iomadcertificate->validinterval) + ' days'));
+                //var_dump($certissue->timecreated);
+                //TODO: make a function for: add validity interval
+                $certissue->timeexpiried = $certissue->timecreated + strtotime(strval($iomadcertificate->validinterval) . ' days');
+                //var_dump(userdate($date));
+                if ($iomadcertificate->valid2monthend){
+                    $certissue->timeexpiried = strtotime(date('Y-m-t',$certissue->timecreated));
+                }                
+    }
+    
     $certissue->id = $DB->insert_record('iomadcertificate_issues', $certissue);
 
     // Email to the teachers and anyone else
@@ -1182,6 +1196,79 @@ function iomadcertificate_get_date($iomadcertificate, $certrecord, $course, $use
     } else if ($iomadcertificate->printdate > 2) {
         if ($modinfo = iomadcertificate_get_mod_grade($course, $iomadcertificate->printdate, $userid)) {
             $date = $modinfo->dategraded;
+        }
+    }
+    if ($iomadcertificate->printdate > 0) {
+        if ($iomadcertificate->datefmt == 1) {
+            $iomadcertificatedate = userdate($date, '%B %d, %Y');
+        } else if ($iomadcertificate->datefmt == 2) {
+            $suffix = iomadcertificate_get_ordinal_number_suffix(userdate($date, '%d'));
+            $iomadcertificatedate = userdate($date, '%B %d' . $suffix . ', %Y');
+        } else if ($iomadcertificate->datefmt == 3) {
+            $iomadcertificatedate = userdate($date, '%d %B %Y');
+        } else if ($iomadcertificate->datefmt == 4) {
+            $iomadcertificatedate = userdate($date, '%B %Y');
+        } else if ($iomadcertificate->datefmt == 5) {
+            $iomadcertificatedate = userdate($date, get_string('strftimedate', 'langconfig'));
+        }
+
+        return $iomadcertificatedate;
+    }
+
+    return '';
+}
+
+/**
+ * Returns the certificate expiration date to display for the iomadcertificate.
+ *
+ * @param stdClass $iomadcertificate
+ * @param stdClass $certrecord
+ * @param stdClass $course
+ * @param int $userid
+ * @return string the date
+ */
+function iomadcertificate_get_expiredate($iomadcertificate, $certrecord, $course, $userid = null) {
+    global $DB, $USER;
+
+    if (empty($userid)) {
+        $userid = $USER->id;
+    }
+
+    // Set iomadcertificate date to current time, can be overwritten later
+    $date = $certrecord->timeexpiried;
+
+    if ($iomadcertificate->printdate == '2') {
+        // Get the enrolment end date
+        $sql = "SELECT MAX(c.timecompleted) as timecompleted
+                FROM {course_completions} c
+                WHERE c.userid = :userid
+                AND c.course = :courseid";
+        // Do we have a date on the tracking tables.
+        $certname = rtrim($iomadcertificate->name, '.');
+        $filename = clean_filename("$certname.pdf");
+    //var_dump($iomadcertificate->printdate);
+    //var_dump($certrecord);
+    //var_dump($DB->get_record_sql($sql, array('userid' => $userid, 'courseid' => $course->id)));
+        if (empty($certrecord->trackid) && $timecompleted = $DB->get_record_sql($sql, array('userid' => $userid, 'courseid' => $course->id))) {
+            if (!empty($timecompleted->timecompleted)) {
+                $date = $timecompleted->timecompleted;
+                //TODO: make a function for: add validity interval
+                $date = strtotime($date) + strtotime(strval($iomadcertificate->validinterval) . ' days');
+                //var_dump(userdate($date));
+                if ($iomadcertificate->valid2monthend){
+                    $date = strtotime(date('Y-m-t',$date));
+                }
+            }
+        }
+    } else if ($iomadcertificate->printdate > 2) {
+        if ($modinfo = iomadcertificate_get_mod_grade($course, $iomadcertificate->printdate, $userid)) {
+            $date = $modinfo->dategraded;
+                //TODO: make a function for: add validity interval
+                $date = strtotime($date) + strtotime(strval($iomadcertificate->validinterval) . ' days');
+                //var_dump(userdate($date));
+                if ($iomadcertificate->valid2monthend){
+                    $date = strtotime(date('Y-m-t',$date));
+                }            
         }
     }
     if ($iomadcertificate->printdate > 0) {
