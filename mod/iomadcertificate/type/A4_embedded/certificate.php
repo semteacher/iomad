@@ -104,8 +104,8 @@ if ($iomadcertificate->printhours) {
 
 // Expire options - flywestwood
 if ($iomadcertificate->enablecertexpire == 1) {
-    iomadcertificate_print_text($pdf, $x, $y + 132, 'C', 'freesans', '', 14,  'expiration date will be there');
-    //iomadcertificate_print_text($pdf, $x, $y + 98, 'C', 'freesans', '', 14,  iomadcertificate_get_expiredate($iomadcertificate, $certrecord, $course, $certuser->id));
+    //iomadcertificate_print_text($pdf, $x, $y + 132, 'C', 'freesans', '', 14,  'expiration date will be there');
+    iomadcertificate_print_text($pdf, $x, $y + 132, 'C', 'freesans', '', 14,  'Expired on: ' . iomadcertificate_get_expiredate($iomadcertificate, $certrecord, $course, $certuser->id));
 }
 
 iomadcertificate_print_text($pdf, $x, $codey, 'C', 'freeserif', '', 10, iomadcertificate_get_code($iomadcertificate, $certrecord));
