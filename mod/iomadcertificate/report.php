@@ -78,6 +78,7 @@ $striomadcertificates = get_string('modulenameplural', 'iomadcertificate');
 $striomadcertificate  = get_string('modulename', 'iomadcertificate');
 $strto = get_string('awardedto', 'iomadcertificate');
 $strdate = get_string('receiveddate', 'iomadcertificate');
+$strexpdate = get_string('expiried', 'iomadcertificate'); //flyeastwood
 $strgrade = get_string('grade','iomadcertificate');
 $strcode = get_string('code', 'iomadcertificate');
 $strreport= get_string('report', 'iomadcertificate');
@@ -122,10 +123,14 @@ if ($download == "ods") {
     $myxls->write_string(0, 1, get_string("firstname"));
     $myxls->write_string(0, 2, get_string("idnumber"));
     $myxls->write_string(0, 3, get_string("group"));
-    $myxls->write_string(0, 4, $strdate);
+    $myxls->write_string(0, 4, $strdate);    
     $myxls->write_string(0, 5, $strgrade);
     $myxls->write_string(0, 6, $strcode);
-
+    // display expire date column header - flyeastwood
+    if ($iomadcertificate->enablecertexpire == 1) {
+    $myxls->write_string(0, 7, $strexpdate);
+    }
+    
     // Generate the data for the body of the spreadsheet
     $i = 0;
     $row = 1;
@@ -145,6 +150,10 @@ if ($download == "ods") {
             $myxls->write_string($row, 4, userdate($user->timecreated));
             $myxls->write_string($row, 5, iomadcertificate_get_grade($iomadcertificate, $course, $user->id));
             $myxls->write_string($row, 6, $user->code);
+            // display expire date value - flyeastwood
+            if ($iomadcertificate->enablecertexpire == 1) {
+                $myxls->write_string($row, 7, userdate($user->timeexpiried));
+            }
             $row++;
         }
         $pos = 6;
@@ -174,7 +183,11 @@ if ($download == "xls") {
     $myxls->write_string(0, 4, $strdate);
     $myxls->write_string(0, 5, $strgrade);
     $myxls->write_string(0, 6, $strcode);
-
+    // display expire date column header - flyeastwood
+    if ($iomadcertificate->enablecertexpire == 1) {
+    $myxls->write_string(0, 7, $strexpdate);
+    }
+    
     // Generate the data for the body of the spreadsheet
     $i = 0;
     $row = 1;
@@ -194,6 +207,10 @@ if ($download == "xls") {
             $myxls->write_string($row, 4, userdate($user->timecreated));
             $myxls->write_string($row, 5, iomadcertificate_get_grade($iomadcertificate, $course, $user->id));
             $myxls->write_string($row, 6, $user->code);
+            // display expire date value - flyeastwood
+            if ($iomadcertificate->enablecertexpire == 1) {
+                $myxls->write_string($row, 7, userdate($user->timeexpiried));
+            }
             $row++;
         }
         $pos = 6;
@@ -217,8 +234,14 @@ if ($download == "txt") {
     echo get_string("group"). "\t";
     echo $strdate. "\t";
     echo $strgrade. "\t";
-    echo $strcode. "\n";
-
+    //echo $strcode. "\n";
+    // display expire date column header - flyeastwood
+    if ($iomadcertificate->enablecertexpire == 1) {
+        echo $strcode. "\t";
+        echo $strexpdate. "\t";
+    } else {
+        echo $strcode. "\n";    
+    }
     // Generate the data for the body of the spreadsheet
     $i=0;
     $row=1;
@@ -239,7 +262,14 @@ if ($download == "txt") {
         echo $ug2 . "\t";
         echo userdate($user->timecreated) . "\t";
         echo iomadcertificate_get_grade($iomadcertificate, $course, $user->id) . "\t";
-        echo $user->code . "\n";
+        //echo $user->code . "\n";
+        // display expire date value - flyeastwood
+        if ($iomadcertificate->enablecertexpire == 1) {
+            echo $user->code. "\t";
+            echo userdate($user->timeexpiried). "\t";
+        } else {
+            echo $user->code. "\n";    
+        }        
         $row++;
     }
     exit;
@@ -253,11 +283,24 @@ $table->width = "95%";
 $table->tablealign = "center";
 $table->head  = array($strto, $strdate, $strgrade, $strcode);
 $table->align = array("left", "left", "center", "center");
+//expire date column header - flyeastwood
+if ($iomadcertificate->enablecertexpire == 1) {
+    $table->head[] = $strexpdate;
+    $table->align[] = "left";
+}
+
 foreach ($users as $user) {
     $name = $OUTPUT->user_picture($user) . fullname($user);
     $date = userdate($user->timecreated) . iomadcertificate_print_user_files($iomadcertificate, $user->id, $context->id);
     $code = $user->code;
-    $table->data[] = array ($name, $date, iomadcertificate_get_grade($iomadcertificate, $course, $user->id), $code);
+    //$table->data[] = array ($name, $date, iomadcertificate_get_grade($iomadcertificate, $course, $user->id), $code);
+    //display expire date value - flyeastwood
+    if ($iomadcertificate->enablecertexpire == 1) {
+        $expdate = userdate($user->timeexpiried);
+        $table->data[] = array ($name, $date, iomadcertificate_get_grade($iomadcertificate, $course, $user->id), $code, $expdate);
+    } else {
+        $table->data[] = array ($name, $date, iomadcertificate_get_grade($iomadcertificate, $course, $user->id), $code);
+    }
 }
 
 // Create table to store buttons
