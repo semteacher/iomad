@@ -329,4 +329,21 @@ $string['completion_warn_supervisor_body'] = '<p>{User_FirstName} {User_LastName
 $string['completion_expiry_warn_description'] = 'Template sent out to a users supervisor email address (if defined) when a user\'s training has expired.';
 $string['completion_expiry_warn_name'] = 'User\'s supervisor training expired warning';
 $string['completion_expiry_warn_supervisor_subject'] = 'Notice: Course {Course_FullName} training expiry';
-$string['completion_expiry_warn_supervisor_body'] = '<p>The training for {User_FirstName} {User_LastName} in course {Course_FullName} will expiry shortly.  Please arrange for them to retake this training if appropriate.</p>';
+$string['completion_expiry_warn_supervisor_body'] = 'The training for {User_FirstName} {User_LastName} in course {Course_FullName} will expiry shortly.  Please arrange for them to retake this training if appropriate.';
+
+//flyeastwood
+$string['cert_expiry_warn_user_subject'] = 'Notice: Certificate {Certificate_Code} in {Course_FullName} will expire soon.';
+$string['cert_expiry_warn_user_body'] = 'Dear {User_FirstName},
+your certificate {Certificate_Code} about training in {Course_FullName} is expiring in {Cert_Expiry_Period} days.  Please arrange for re-certification if appropriate';
+$string['cert_expiry_warn_manager_subject'] = 'Certificate expiry report for {Course_FullName}';
+$string['cert_expiry_warn_manager_body'] = 'Dear {User_FirstName},
+the following user\'s certificates are due to expire soon :
+
+{Cert_Expire_ReportText}';
+$string['cert_expire_user_subject'] = 'Certificate {Certificate_Code} in {Course_FullName} has been expired';
+$string['cert_expire_user_body'] = 'This is to let you know that your certificate {Certificate_Code} about training in {Course_FullName} has been expired.';
+$string['cert_expire_manager_subject'] = 'Certificate expired report for {Course_FullName}';
+$string['cert_expire_manager_body'] = 'Dear {User_FullName},
+the following user\'s certificates in {Course_FullName} has expired :
+
+{Cert_Expire_ReportText}';
