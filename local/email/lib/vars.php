@@ -110,7 +110,9 @@ class EmailVars {
             // Sender information fields .
                         'Sender_FirstName', 'Sender_LastName', 'Sender_Email',
             // Miscellaneouss fields.
-                        'LinkURL', 'SiteURL'
+                        'LinkURL', 'SiteURL',
+            //Certificate fields.
+                        'Certificate_Code', 'Cert_Expire_ReportText'
         );
 
         // Add all methods of this class that are ok2call to the $result array as well.
