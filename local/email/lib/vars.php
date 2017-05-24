@@ -118,7 +118,9 @@ class EmailVars {
             // Miscellaneouss fields.
                         'LinkURL', 'SiteURL',
             //Certificate fields.
-                        'Iomadcertificateissues_Code', 'Cert_Expire_ReportText'
+                        'Iomadcertificate_Expireemailreminde',
+            //Certificate issue fields.
+                        'Iomadcertificateissues_Code'
         );
 
         // Add all methods of this class that are ok2call to the $result array as well.
