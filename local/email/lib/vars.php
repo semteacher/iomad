@@ -29,6 +29,9 @@ class EmailVars {
     protected $url = null;
     protected $sender = null;
     protected $approveuser = null;
+    protected $event = null;
+    protected $iomadcertificate = null;
+    protected $iomadcertificateissues = null;
 
     protected $blank = "[blank]";
 
@@ -38,7 +41,7 @@ class EmailVars {
      * Sets up and retrieves the API objects
      *
      **/
-    public function __construct($company, $user, $course, $invoice, $classroom, $license, $sender, $approveuser) {
+    public function __construct($company, $user, $course, $invoice, $classroom, $license, $sender, $approveuser, $event, $iomadcertificate, $iomadcertificateissues) {
         $this->company =& $company;
         $this->user =& $user;
         $this->invoice =& $invoice;
@@ -46,7 +49,10 @@ class EmailVars {
         $this->license =& $license;
         $this->sender =& $sender;
         $this->approveuser =& $approveuser;
-
+        $this->event =& $event;
+        $this->iomadcertificate =& $iomadcertificate;
+        $this->iomadcertificateissues =& $iomadcertificateissues;
+        
         if (!isset($this->company)) {
             if (isset($user->id)) {
                 $this->company = company::by_userid($user->id);
@@ -112,7 +118,7 @@ class EmailVars {
             // Miscellaneouss fields.
                         'LinkURL', 'SiteURL',
             //Certificate fields.
-                        'Certificate_Code', 'Cert_Expire_ReportText'
+                        'Iomadcertificateissues_Code', 'Cert_Expire_ReportText'
         );
 
         // Add all methods of this class that are ok2call to the $result array as well.
