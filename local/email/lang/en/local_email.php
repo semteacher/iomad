@@ -334,16 +334,12 @@ $string['completion_expiry_warn_supervisor_body'] = 'The training for {User_Firs
 //flyeastwood
 $string['cert_expiry_warn_user_subject'] = 'Notice: Certificate {Iomadcertificateissues_Code} in {Course_FullName} will expire soon.';
 $string['cert_expiry_warn_user_body'] = 'Dear {User_FirstName},
-your certificate {Iomadcertificateissues_Code} about training in {Course_FullName} is expiring in {Iomadcertificate_Expireemailreminde} days.  Please arrange for re-certification if appropriate';
+your certificate {Iomadcertificateissues_Code} about training in {Course_FullName} is expiring on {IssuedCertificateExpiredOn} .  Please arrange for re-certification if appropriate';
 $string['cert_expiry_warn_manager_subject'] = 'Certificate expiry report for {Course_FullName}';
 $string['cert_expiry_warn_manager_body'] = 'Dear {User_FirstName},
-the following user\'s certificates are due to expire soon :
-
-{Cert_Expire_ReportText}';
+the following user\'s certificate {Iomadcertificateissues_Code} are due to expire on {IssuedCertificateExpiredOn}';
 $string['cert_expire_user_subject'] = 'Certificate {Iomadcertificateissues_Code} in {Course_FullName} has been expired';
 $string['cert_expire_user_body'] = 'This is to let you know that your certificate {Iomadcertificateissues_Code} about training in {Course_FullName} has been expired.';
 $string['cert_expire_manager_subject'] = 'Certificate expired report for {Course_FullName}';
 $string['cert_expire_manager_body'] = 'Dear {User_FullName},
-the following user\'s certificates in {Course_FullName} has expired :
-
-{Cert_Expire_ReportText}';
+the following user\'s certificate {Iomadcertificateissues_Code} in {Course_FullName} has been expired';
