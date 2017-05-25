@@ -120,7 +120,7 @@ class EmailVars {
             //Certificate fields.
                         'Iomadcertificate_Expireemailreminde',
             //Certificate issue fields.
-                        'Iomadcertificateissues_Code'
+                        'Iomadcertificateissues_Code', 'IssuedCertificateExpiredOn'
         );
 
         // Add all methods of this class that are ok2call to the $result array as well.
@@ -222,5 +222,19 @@ class EmailVars {
                 return new moodle_url($this->url);
             }
         }            
+    }
+    
+    /**
+     * Provide the IssuedCertificateExpiredOn method for templates.
+     *
+     * returns date;
+     *
+     **/    
+    function IssuedCertificateExpiredOn() {
+        $certexpiredate = '=Date_converting_error=';
+        if ($this->iomadcertificateissues->timeexpiried) {
+            $certexpiredate = userdate($this->iomadcertificateissues->timeexpiried);
+        }
+        return $certexpiredate;
     }
 }
