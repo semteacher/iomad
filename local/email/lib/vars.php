@@ -120,7 +120,7 @@ class EmailVars {
             //Certificate fields.
                         'Iomadcertificate_Expireemailreminde',
             //Certificate issue fields.
-                        'Iomadcertificateissues_Code', 'IssuedCertificateExpiredOn', 'IssuedCertificateStudentFullName'
+                        'Iomadcertificateissues_Code'
         );
 
         // Add all methods of this class that are ok2call to the $result array as well.
