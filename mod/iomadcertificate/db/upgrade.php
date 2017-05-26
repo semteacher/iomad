@@ -602,6 +602,7 @@ function xmldb_iomadcertificate_upgrade($oldversion=0) {
         // Define field timeexpiried to be added to iomadcertificate settings.
         $table = new xmldb_table('iomadcertificate_issues');
         $field = new xmldb_field('timeexpiried', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0);
+        //TODO: should it is necessary to update expiration date for early issued certificates (instead to set to "0")?
         
         // Conditionally launch add field timeexpiried.
         if (!$dbman->field_exists($table, $field)) {

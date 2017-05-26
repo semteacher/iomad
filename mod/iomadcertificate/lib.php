@@ -644,6 +644,12 @@ function iomadcertificate_get_issue($course, $user, $iomadcertificate, $cm) {
 
     // Check if there is an issue already, should only ever be one
     if ($certissue = $DB->get_record('iomadcertificate_issues', array('userid' => $user->id, 'iomadcertificateid' => $iomadcertificate->id))) {
+        if ($iomadcertificate->enablecertexpire == 1 && $certissue->timeexpiried == 0){
+            //update expiration date for early issued certificates
+            $certissue->timeexpiried = iomadcertificate_get_expiredate_value($iomadcertificate, $certissue->timecreated);
+            $DB->update_record('iomadcertificate_issues', $certissue);
+        }
+        //TODO: should necessary to remove expiration date if enablecertexpire set to NO?
         return $certissue;
     }
 
