@@ -1682,7 +1682,7 @@ function iomadcertificate_cron_settoexpiry() {
                     JOIN {iomadcertificate_issues} ci   
                     ON (ct.id = ci.iomadcertificateid
                         AND ci.timeexpiried > 0 
-                        AND (ci.timeexpiried - (ct.expireemailreminde+366) * 86400) < " . $runtime . ")                        
+                        AND (ci.timeexpiried - ct.expireemailreminde * 86400) < " . $runtime . ") 
                     JOIN {company_users} cu
                     ON (ci.userid = cu.userid)
                     JOIN {company} co
@@ -1729,7 +1729,7 @@ function iomadcertificate_cron_settoexpiry() {
                                   AND courseid = :courseid
                                   AND templatename = :templatename
                                   AND (sent IS NULL
-                                  OR sent > " . $runtime . " - " . ($compuser->expireemailreminde+366) . " * 86400)",
+                                  OR sent > " . $runtime . " - " . $compuser->expireemailreminde . " * 86400)",
                                   array('userid' => $compuser->userid,
                                         'courseid' => $compuser->courseid,
                                         'templatename' => 'cert_expiry_warn_user'))) {
@@ -1779,7 +1779,7 @@ function iomadcertificate_cron_expied() {
                     JOIN {iomadcertificate_issues} ci   
                     ON (ct.id = ci.iomadcertificateid
                         AND ci.timeexpiried > 0 
-                        AND (ci.timeexpiried - (ct.expireemailreminde+364)* 86400) < " . $runtime . ") 
+                        AND ci.timeexpiried < " . $runtime . ") 
                     JOIN {company_users} cu
                     ON (ci.userid = cu.userid)
                     JOIN {company} co
@@ -1826,7 +1826,7 @@ function iomadcertificate_cron_expied() {
                                   AND courseid = :courseid
                                   AND templatename = :templatename
                                   AND (sent IS NULL
-                                  OR sent > " . $runtime . " - " . ($compuser->expireemailreminde+364) . " * 86400)",
+                                  OR sent > " . $runtime ,
                                   array('userid' => $compuser->userid,
                                         'courseid' => $compuser->courseid,
                                         'templatename' => 'cert_expire_user'))) {
