@@ -25,23 +25,16 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+//TODO for development set 'minute' => '*/1', 'hour' => '*',
+//TODO for production set 'minute' => '0', 'hour' => '0',
 $tasks = array(
     array(
         'classname' => 'mod_iomadcertificate\task\expire_email_cron_task',
         'blocking' => 0,
-        'minute' => '*/1',
-        'hour' => '*',
+        'minute' => '0',
+        'hour' => '0',
         'day' => '*',
         'month' => '*',
         'dayofweek' => '*'
-    )
-    //array(
-    //    'classname' => 'local_email_reports\task\cron_task',
-    //    'blocking' => 0,
-    //    'minute' => '0',
-    //    'hour' => '0',
-    //    'day' => '*',
-    //    'month' => '*',
-    //    'dayofweek' => '*'
-    //)    
+    )    
 );
