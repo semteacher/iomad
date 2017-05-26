@@ -120,7 +120,7 @@ class EmailVars {
             //Certificate fields.
                         'Iomadcertificate_Expireemailreminde',
             //Certificate issue fields.
-                        'Iomadcertificateissues_Code', 'IssuedCertificateExpiredOn'
+                        'Iomadcertificateissues_Code', 'IssuedCertificateExpiredOn', 'IssuedCertificateStudentFullName'
         );
 
         // Add all methods of this class that are ok2call to the $result array as well.
@@ -236,5 +236,18 @@ class EmailVars {
             $certexpiredate = userdate($this->iomadcertificateissues->timeexpiried);
         }
         return $certexpiredate;
+    }
+    
+     /**
+     * Provide the IssuedCertificateStudentFullName method for templates.
+     *
+     * returns text;
+     *
+     **/    
+    function IssuedCertificateStudentFullName() {
+        global $DB;
+        
+        $userDetails = $DB->get_record('user', array('id' => $this->iomadcertificateissues->userid));
+        return $userDetails->firstname . " " . $userDetails->lastname;
     }
 }
