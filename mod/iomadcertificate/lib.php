@@ -27,6 +27,8 @@
 require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->dirroot.'/grade/lib.php');
 require_once($CFG->dirroot.'/grade/querylib.php');
+require_once($CFG->dirroot .'/local/email/lib/api.php');
+require_once($CFG->dirroot .'/local/email/lib/vars.php');
 
 /** The border image folder */
 define('CERT_IMAGE_BORDER', 'borders');
@@ -1674,7 +1676,7 @@ function iomadcertificate_cron_settoexpiry() {
     mtrace("FLYEASTWOOD: Running email report cron at ".date('D M Y h:m:s', $runtime));        
 
     //TODO: for debug use AND (ci.timeexpiried - (ct.expireemailreminde+366)* 86400) < " . $runtime . ") and set task frequency to 2 min
-    //TODO: for production use AND (ci.timeexpiried - ct.expireemailreminde * 86400) < " . $runtime . ") and set task frequency to 2 min
+    //TODO: for production use AND (ci.timeexpiried - ct.expireemailreminde * 86400) < " . $runtime . ") and set task frequency one per day
     $allusers = $DB->get_records_sql("SELECT co.id as companyid, co.name, d.id, d.name, c.id as courseid, c.fullname, cc.timecompleted, ct.id as certid, ct.name, ct.validinterval, ct.valid2monthend, ct.expireemailreminde, ci.id as certrecordid, ci.timecreated, ci.timeexpiried, ci.code, u.id as userid, u.firstname, u.lastname, u.username, u.email
                     FROM {iomad_courses} ic
                     JOIN {local_iomad_track} cc
@@ -1702,22 +1704,22 @@ function iomadcertificate_cron_settoexpiry() {
                     WHERE cc.id IN (
                         SELECT max(id) FROM {local_iomad_track}
                         GROUP BY userid,courseid)");
-//var_dump($allusers);
+
     if (count($allusers) > 0){
-    foreach ($allusers as $compuser) {
-    mtrace("FLYEASTWOOD: certificates will expire soon - user userid $compuser->userid");
-        if (!$user = $DB->get_record('user', array('id' => $compuser->userid))) { 
-            continue;
-        }
-    mtrace("FLYEASTWOOD: certificates will expire soon - user courseid $compuser->courseid");
-        if (!$course = $DB->get_record('course', array('id' => $compuser->courseid))) { 
-            continue;
-        }
-    mtrace("FLYEASTWOOD: certificates will expire soon - user companyid $compuser->companyid");    
-        if (!$company = $DB->get_record('company', array('id' => $compuser->companyid))) { 
-            continue;
-        }
-    mtrace("FLYEASTWOOD: certificates will expire soon - user certid $compuser->certid");
+        foreach ($allusers as $compuser) {
+            mtrace("FLYEASTWOOD: certificates will expire soon - user userid $compuser->userid");
+            if (!$user = $DB->get_record('user', array('id' => $compuser->userid))) { 
+                continue;
+            }
+            mtrace("FLYEASTWOOD: certificates will expire soon - user courseid $compuser->courseid");
+            if (!$course = $DB->get_record('course', array('id' => $compuser->courseid))) { 
+                continue;
+            }
+            mtrace("FLYEASTWOOD: certificates will expire soon - user companyid $compuser->companyid");    
+            if (!$company = $DB->get_record('company', array('id' => $compuser->companyid))) { 
+                continue;
+            }
+            mtrace("FLYEASTWOOD: certificates will expire soon - user certid $compuser->certid");
     //$expdate = userdate($compuser-> certtimeexpiried);
     //$warnremind = $compuser->expireemailreminde;
     //mtrace("FLY-user certtimeexpiried on $expdate");
@@ -1726,17 +1728,17 @@ function iomadcertificate_cron_settoexpiry() {
     //$userdateruntime = userdate($runtime);
     //mtrace("FLY-user date of sending notification $daysofexpnotify");
     //mtrace("FLY-today (userdate) $userdateruntime");
-        if (!$iomadcertificate = $DB->get_record('iomadcertificate', array('id' => $compuser->certid))) { 
-            continue;
-        }
-    mtrace("FLYEASTWOOD: certificates will expire soon - user certissueid $compuser->certissueid");    
-        if (!$iomadcertificateissues = $DB->get_record('iomadcertificate_issues', array('id' => $compuser->certrecordid))) {
-            continue;
-        }        
-        
-        //TODO: for debug use OR sent > " . $runtime . " - " . ($compuser->expireemailreminde+366) . " * 86400)",
-        //TODO: for production use OR sent > " . $runtime . " - " . $compuser->expireemailreminde . " * 86400)",
-        if ($DB->get_records_sql("SELECT id FROM {email}
+            if (!$iomadcertificate = $DB->get_record('iomadcertificate', array('id' => $compuser->certid))) { 
+                continue;
+            }
+            mtrace("FLYEASTWOOD: certificates will expire soon - user certissueid $compuser->certissueid");
+            if (!$iomadcertificateissues = $DB->get_record('iomadcertificate_issues', array('id' => $compuser->certrecordid))) {
+                continue;
+            }        
+
+            //TODO: for debug use OR sent > " . $runtime . " - " . ($compuser->expireemailreminde+366) . " * 86400)",
+            //TODO: for production use OR sent > " . $runtime . " - " . $compuser->expireemailreminde . " * 86400)",
+            if ($DB->get_records_sql("SELECT id FROM {email}
                                   WHERE userid = :userid
                                   AND courseid = :courseid
                                   AND templatename = :templatename
@@ -1745,19 +1747,23 @@ function iomadcertificate_cron_settoexpiry() {
                                   array('userid' => $compuser->userid,
                                         'courseid' => $compuser->courseid,
                                         'templatename' => 'cert_expiry_warn_user'))) {
-            mtrace("FLYEASTWOOD: certificates will expire soon - Exit by email_table");                            
-            continue;
-        }
-        mtrace("FLYEASTWOOD: Sending certificate expiration warning email to $user->email");        
-        EmailTemplate::send('cert_expiry_warn_user', array('course' => $course, 'user' => $user, 'company' => $company, 'iomadcertificate' => $iomadcertificate, 'iomadcertificateissues' => $iomadcertificateissues));
-        // Send the supervisor email too.
-        mtrace("FLYEASTWOOD: Sending certificate expiration warning emails to teachers/manager");
-        //TODO
-        //iomadcertificate_cron_settoexpiry_email_teachers($course, $iomadcertificate, $iomadcertificateissues, $cm);
-    }    
+                mtrace("FLYEASTWOOD: certificates will expire soon - Exit by email_table");                            
+                continue;
+            }
+            
+            mtrace("FLYEASTWOOD: Sending certificate expiration warning email to student $user->email");        
+            EmailTemplate::send('cert_expiry_warn_user', array('course' => $course, 'user' => $user, 'company' => $company, 'iomadcertificate' => $iomadcertificate, 'iomadcertificateissues' => $iomadcertificateissues));
+            // Send the supervisor email too.
+            mtrace("FLYEASTWOOD: Sending certificate expiration warning email to all teachers/managers");
+            $certmoduleid = $DB->get_record('modules', array('name' => 'iomadcertificate'));     
+            //mtrace("FLYEASTWOOD: certmoduleid $certmoduleid->id");
+            $coursemodules = $DB->get_records('course_modules', array('course' => $compuser->courseid, 'module' => $certmoduleid->id));
+            //mtrace("FLYEASTWOOD: certificates will expire soon - count coursemodules with certificates: " . count($coursemodules));
+            iomadcertificate_cron_settoexpiry_email_teachers($course, $user, $company, $iomadcertificate, $iomadcertificateissues, $coursemodules);
+        }    
     }
     
-    mtrace("FLYEASTWOOD: FINISHED - Sending expiry warning emails to users ");
+    mtrace("FLYEASTWOOD: FINISHED - Sending expiry warning emails to students and teachers are completed");
 }
 
 /**
@@ -1767,9 +1773,18 @@ function iomadcertificate_cron_settoexpiry() {
  * @param stdClass $course
  * @param stdClass $iomadcertificate
  * @param stdClass $certrecord
- * @param stdClass $cm course module
+ * @param array of stdClass $coursemodules list of course modules with certificate activity
  */
-function iomadcertificate_cron_settoexpiry_email_teachers($course, $iomadcertificate, $certrecord, $cm) {
+function iomadcertificate_cron_settoexpiry_email_teachers($course, $user, $company, $iomadcertificate, $certrecord, $coursemodules) {
     global $USER, $CFG, $DB;
-
+    
+    foreach ($coursemodules as $cm) {
+    if ($teachers = iomadcertificate_get_teachers($iomadcertificate, $user, $course, $cm)) {
+        //$strawarded = get_string('awarded', 'iomadcertificate');
+        foreach ($teachers as $teacher) {
+            $results = EmailTemplate::send('cert_expiry_warn_manager', array('course' => $course, 'user' => $teacher, 'company' => $company, 'iomadcertificate' => $iomadcertificate, 'iomadcertificateissues' => $certrecord));
+            mtrace("FLYEASTWOOD: Sending expiry warning emails to teacher $teacher->username - got - $results");
+        }
+    }
+    }
 }
