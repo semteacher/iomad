@@ -42,16 +42,10 @@ class expire_email_cron_task extends \core\task\scheduled_task {
     public function execute() {
         global $CFG;
         require_once($CFG->dirroot . '/mod/iomadcertificate/lib.php');
+        //notify about certificates that will expire soon
         iomadcertificate_cron_settoexpiry();
-    
-        // Set some defaults.
-        //$runtime = time();
-        //$courses = array();
-
-        //mtrace("FLYEASTWOOD: Running email report cron at ".date('D M Y h:m:s', $runtime));        
-        
-        //mtrace("FLYEASTWOOD: Sending expiry warning email to users");
-        //mtrace("FLYEASTWOOD: Sending expiry warning email to $user->email");
+        //notify about certificates that have been experied
+        iomadcertificate_cron_expied();
     }
 
 }
