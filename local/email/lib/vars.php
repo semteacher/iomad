@@ -54,6 +54,8 @@ class EmailVars {
         $this->event =& $event;
         $this->iomadcertificate =& $iomadcertificate;
         $this->iomadcertificateissues =& $iomadcertificateissues;
+        $this->cm =& $cm;
+        $this->completion =& $completion;
         
         if (!isset($this->company)) {
             if (isset($user->id)) {
@@ -122,7 +124,11 @@ class EmailVars {
             //Certificate fields.
                         'Iomadcertificate_Expireemailreminde',
             //Certificate issue fields.
-                        'Iomadcertificateissues_Code'
+                        'Iomadcertificateissues_Code',
+            //Course Modules fields.
+                        'Cm_Name', 'Cm_ModName',
+            //Activity Completion fields.
+                        'Completion_CompletionStateMsg', 'Completion_TimeModified'
         );
 
         // Add all methods of this class that are ok2call to the $result array as well.
