@@ -253,11 +253,21 @@ class EmailVars {
      *
      **/    
     function CompletionTimeModifiedOn() {
-        $completiontimemodified = '=Date_converting_error=';
-        if ($this->completion->timemodified) {
-            $completiontimemodified = userdate($this->completion->timemodified);
+        return getUserdate($this->completion->timemodified);
+    }
+    
+    /**
+     * Provide the CompletionTimeModifiedOn method for templates.
+     *
+     * returns date;
+     *
+     **/    
+    protected function getUserdate($datetimevalue) {
+        $returndate = '=Date_converting_error=';
+        if ($datetimevalue) {
+            $returndate = userdate($datetimevalue);
         }
-        return $completiontimemodified;
+        return $returndate;
     }
     
      /**
