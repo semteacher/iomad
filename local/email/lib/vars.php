@@ -253,7 +253,7 @@ class EmailVars {
      *
      **/    
     function CompletionTimeModifiedOn() {
-        return getUserdate($this->completion->timemodified);
+        return $this->getUserdate($this->completion->timemodified);
     }
     
     /**
