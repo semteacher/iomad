@@ -345,4 +345,4 @@ $string['cert_expire_manager_body'] = 'Dear {User_FirstName} {User_LastName},
 the following user\'s certificate {Iomadcertificateissues_Code} , awarded to {IssuedCertificateStudentFullName}, in {Course_FullName} has been expired due to date {IssuedCertificateExpiredOn}';
 $string['activity_completion_updated_user_subject'] = 'The {Cm_Name} activity in {Course_FullName} has been updated';
 $string['activity_completion_updated_user_body'] = 'Dear {User_FirstName},
-An {Cm_ModName} activity called {Cm_Name} in {Course_FullName} has been updated to the following completion state: \"{Completion_CompletionStateMsg}\" on {CompletionTimeModifiedOn}';
+An {Cm_ModName} activity called {Cm_Name} in {Course_FullName} has been updated to the following completion state: "{Completion_CompletionStateMsg}" on {CompletionTimeModifiedOn}';

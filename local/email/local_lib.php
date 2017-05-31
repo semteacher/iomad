@@ -49,7 +49,8 @@ function local_email_get_templates() {
                         'cert_expire_user',
                         'cert_expire_manager',
                         'cert_expiry_warn_user',
-                        'cert_expiry_warn_manager',                        
+                        'cert_expiry_warn_manager',
+                        'activity_completion_updated_user',
                         'user_create',
                         'user_reset');
 
