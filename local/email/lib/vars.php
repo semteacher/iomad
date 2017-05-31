@@ -128,7 +128,7 @@ class EmailVars {
             //Course Modules fields.
                         'Cm_Name', 'Cm_ModName',
             //Activity Completion fields.
-                        'Completion_CompletionStateMsg', 'Completion_TimeModified'
+                        'Completion_CompletionStateMsg', 'CompletionTimeModifiedOn'
         );
 
         // Add all methods of this class that are ok2call to the $result array as well.
@@ -244,6 +244,20 @@ class EmailVars {
             $certexpiredate = userdate($this->iomadcertificateissues->timeexpiried);
         }
         return $certexpiredate;
+    }
+
+    /**
+     * Provide the CompletionTimeModifiedOn method for templates.
+     *
+     * returns date;
+     *
+     **/    
+    function CompletionTimeModifiedOn() {
+        $completiontimemodified = '=Date_converting_error=';
+        if ($this->completion->timemodified) {
+            $completiontimemodified = userdate($this->completion->timemodified);
+        }
+        return $completiontimemodified;
     }
     
      /**
