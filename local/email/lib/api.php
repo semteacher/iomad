@@ -407,7 +407,9 @@ class EmailTemplate {
                               $this->approveuser,
                               $this->event,
                               $this->iomadcertificate,
-                              $this->iomadcertificateissues);
+                              $this->iomadcertificateissues,
+                              $this->cm,
+                              $this->completion);
 
         foreach ($amethods as $funcname) {
             $replacement = "{" . $funcname . "}";
