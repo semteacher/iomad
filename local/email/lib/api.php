@@ -33,6 +33,8 @@ class EmailTemplate {
     protected $due = null;
     protected $iomadcertificate = null;
     protected $iomadcertificateissues = null;
+    protected $cm = null;
+    protected $completion = null;    
 
     /**
      * Send an email to (a) specified user(s)
@@ -131,7 +133,9 @@ class EmailTemplate {
         $this->headers = array_key_exists('headers', $options) ? $options['headers'] : null;
         $this->company = array_key_exists('company', $options) ? $options['company'] : null;
         $this->iomadcertificate = array_key_exists('iomadcertificate', $options) ? $options['iomadcertificate'] : null;
-        $this->iomadcertificateissues = array_key_exists('iomadcertificateissues', $options) ? $options['iomadcertificateissues'] : null;        
+        $this->iomadcertificateissues = array_key_exists('iomadcertificateissues', $options) ? $options['iomadcertificateissues'] : null;
+        $this->cm = array_key_exists('cm', $options) ? $options['cm'] : null;
+        $this->completion = array_key_exists('completion', $options) ? $options['completion'] : null;
         if (!isset($user)) {
             $user =& $USER;
         }
