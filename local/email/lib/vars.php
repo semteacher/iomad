@@ -29,6 +29,11 @@ class EmailVars {
     protected $url = null;
     protected $sender = null;
     protected $approveuser = null;
+    protected $event = null;
+    protected $iomadcertificate = null;
+    protected $iomadcertificateissues = null;
+    protected $cm = null;
+    protected $completion = null;
 
     protected $blank = "[blank]";
 
@@ -38,7 +43,7 @@ class EmailVars {
      * Sets up and retrieves the API objects
      *
      **/
-    public function __construct($company, $user, $course, $invoice, $classroom, $license, $sender, $approveuser) {
+    public function __construct($company, $user, $course, $invoice, $classroom, $license, $sender, $approveuser, $event, $iomadcertificate, $iomadcertificateissues, $cm, $completion) {
         $this->company =& $company;
         $this->user =& $user;
         $this->invoice =& $invoice;
@@ -46,7 +51,12 @@ class EmailVars {
         $this->license =& $license;
         $this->sender =& $sender;
         $this->approveuser =& $approveuser;
-
+        $this->event =& $event;
+        $this->iomadcertificate =& $iomadcertificate;
+        $this->iomadcertificateissues =& $iomadcertificateissues;
+        $this->cm =& $cm;
+        $this->completion =& $completion;
+        
         if (!isset($this->company)) {
             if (isset($user->id)) {
                 $this->company = company::by_userid($user->id);
@@ -110,7 +120,15 @@ class EmailVars {
             // Sender information fields .
                         'Sender_FirstName', 'Sender_LastName', 'Sender_Email',
             // Miscellaneouss fields.
-                        'LinkURL', 'SiteURL'
+                        'LinkURL', 'SiteURL',
+            //Certificate fields.
+                        'Iomadcertificate_Expireemailreminde',
+            //Certificate issue fields.
+                        'Iomadcertificateissues_Code',
+            //Course Modules fields.
+                        'Cm_Name', 'Cm_ModName',
+            //Activity Completion fields.
+                        'Completion_CompletionStateMsg', 'CompletionTimeModifiedOn'
         );
 
         // Add all methods of this class that are ok2call to the $result array as well.
@@ -212,5 +230,56 @@ class EmailVars {
                 return new moodle_url($this->url);
             }
         }            
+    }
+    
+    /**
+     * Provide the IssuedCertificateExpiredOn method for templates.
+     *
+     * returns date;
+     *
+     **/    
+    function IssuedCertificateExpiredOn() {
+        $certexpiredate = '=Date_converting_error=';
+        if ($this->iomadcertificateissues->timeexpiried) {
+            $certexpiredate = userdate($this->iomadcertificateissues->timeexpiried);
+        }
+        return $certexpiredate;
+    }
+
+    /**
+     * Provide the CompletionTimeModifiedOn method for templates.
+     *
+     * returns date;
+     *
+     **/    
+    function CompletionTimeModifiedOn() {
+        return getUserdate($this->completion->timemodified);
+    }
+    
+    /**
+     * Provide the CompletionTimeModifiedOn method for templates.
+     *
+     * returns date;
+     *
+     **/    
+    protected function getUserdate($datetimevalue) {
+        $returndate = '=Date_converting_error=';
+        if ($datetimevalue) {
+            $returndate = userdate($datetimevalue);
+        }
+        return $returndate;
+    }
+    
+     /**
+     * Provide the IssuedCertificateStudentFullName method for templates.
+     *
+     * returns text;
+     *
+     **/    
+    function IssuedCertificateStudentFullName() {
+        global $DB;
+        
+        $userDetails = $DB->get_record('user', array('id' => $this->iomadcertificateissues->userid));
+        return $userDetails->firstname . " " . $userDetails->lastname;
     }
 }

@@ -249,3 +249,19 @@ $string['completion_warn_supervisor_subject'] = 'Notice: Course {Course_FullName
 $string['completion_warn_supervisor_body'] = '{User_FirstName} {User_LastName} has not completed their training in course {Course_FullName} within the normal timeframe';
 $string['completion_expiry_warn_supervisor_subject'] = 'Notice: Course {Course_FullName} training expiry';
 $string['completion_expiry_warn_supervisor_body'] = 'The training for {User_FirstName} {User_LastName} in course {Course_FullName} will expiry shortly.  Please arrange for them to retake this training if appropriate.';
+
+//flyeastwood
+$string['cert_expiry_warn_user_subject'] = 'Notice: Certificate {Iomadcertificateissues_Code} in {Course_FullName} will expire soon.';
+$string['cert_expiry_warn_user_body'] = 'Dear {User_FirstName},
+your certificate {Iomadcertificateissues_Code} about training in {Course_FullName} is expiring on {IssuedCertificateExpiredOn} .  Please arrange for re-certification if appropriate';
+$string['cert_expiry_warn_manager_subject'] = 'Certificate expiry report for {Course_FullName}';
+$string['cert_expiry_warn_manager_body'] = 'Dear {User_FirstName} {User_LastName},
+the following user\'s certificate {Iomadcertificateissues_Code}, awarded to {IssuedCertificateStudentFullName}, is due to expire on {IssuedCertificateExpiredOn}';
+$string['cert_expire_user_subject'] = 'Certificate {Iomadcertificateissues_Code} in {Course_FullName} has been expired';
+$string['cert_expire_user_body'] = 'This is to let you know that your certificate {Iomadcertificateissues_Code} about training in {Course_FullName} has been expired.';
+$string['cert_expire_manager_subject'] = 'Certificate expired report for {Course_FullName}';
+$string['cert_expire_manager_body'] = 'Dear {User_FirstName} {User_LastName},
+the following user\'s certificate {Iomadcertificateissues_Code} , awarded to {IssuedCertificateStudentFullName}, in {Course_FullName} has been expired due to date {IssuedCertificateExpiredOn}';
+$string['activity_completion_updated_user_subject'] = 'The {Cm_Name} activity in {Course_FullName} has been updated';
+$string['activity_completion_updated_user_body'] = 'Dear {User_FirstName},
+An {Cm_ModName} activity called {Cm_Name} in {Course_FullName} has been updated to the following completion state: "{Completion_CompletionStateMsg}" on {CompletionTimeModifiedOn}';
