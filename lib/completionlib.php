@@ -562,6 +562,7 @@ class completion_info {
         // the possible result of this change. If the change is to COMPLETE and the
         // current value is one of the COMPLETE_xx subtypes, ignore that as well
         $current = $this->get_data($cm, false, $userid);
+//var_dump('libcomptest: current '.$current->completionstate);        
         if ($possibleresult == $current->completionstate ||
             ($possibleresult == COMPLETION_COMPLETE &&
                 ($current->completionstate == COMPLETION_COMPLETE_PASS ||
@@ -587,9 +588,14 @@ class completion_info {
 
         // If changed, update
         if ($newstate != $current->completionstate) {
+//var_dump('libcomptest: newstate '.$newstate);
             $current->completionstate = $newstate;
             $current->timemodified    = time();
             $this->internal_set_data($cm, $current);
+            $this->send_emails($cm, $current);
+//var_dump($current);
+//var_dump($cm);
+//die();            
         }
     }
 
@@ -1053,6 +1059,39 @@ class completion_info {
         $event->add_record_snapshot('course_modules_completion', $data);
         $event->trigger();
     }
+    
+    /**
+     * Send completion notification for a particular coursemodule and user (user is
+     * determined from $data) to user/teacher via email.
+     *
+     * (Internal function. Not private, so we can unit-test it.)
+     *
+     * @param stdClass|cm_info $cm Activity
+     * @param stdClass $data Data about completion for that user
+     */
+    public function send_emails($cm, $data) {
+        global $USER, $DB;
+var_dump('libcomptest-sendemails: newstate '.$data->completionstate);
+var_dump($data);
+var_dump($cm);
+            mtrace("FLYEASTWOOD: activity completion - user userid $data->userid");
+            if (!$user = $DB->get_record('user', array('id' => $data->userid))) { 
+                continue;
+            }
+            mtrace("FLYEASTWOOD: activity completion - user courseid $cm->course");
+            if (!$course = $DB->get_record('course', array('id' => $cm->course))) { 
+                continue;
+            }
+            //mtrace("FLYEASTWOOD: activity completion - user companyid $compuser->companyid");    
+            //if (!$company = $DB->get_record('company', array('id' => $compuser->companyid))) { 
+            //    continue;
+            //}
+                mtrace("FLYEASTWOOD: Sending activity completion email to student $user->email");        
+                EmailTemplate::send('activity_completion_updated_user', array('course' => $course, 'user' => $user, 'cm' => $cm, 'completion' => $data));            
+die();
+            //$data->completionstate;        
+   
+    }    
 
      /**
      * Return whether or not the course has activities with completion enabled.
