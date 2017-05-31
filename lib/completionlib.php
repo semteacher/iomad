@@ -36,6 +36,8 @@ require_once $CFG->dirroot.'/completion/criteria/completion_criteria.php';
 require_once $CFG->dirroot.'/completion/completion_completion.php';
 require_once $CFG->dirroot.'/completion/completion_criteria_completion.php';
 
+require_once($CFG->dirroot.'/local/email/lib.php');
+
 
 /**
  * The completion system is enabled in this site/course
@@ -1086,6 +1088,14 @@ var_dump($cm);
             //if (!$company = $DB->get_record('company', array('id' => $compuser->companyid))) { 
             //    continue;
             //}
+            switch ($data->completionstate)
+            {
+            case COMPLETION_INCOMPLETE: $data->completionstatemsg = 'incomplete'; break;
+            case COMPLETION_COMPLETE: $data->completionstatemsg = 'complete'; break;
+            case COMPLETION_COMPLETE_PASS: $data->completionstatemsg = 'pass'; break;
+            case COMPLETION_COMPLETE_FAIL: $data->completionstatemsg = 'fail'; break;
+            default : $data->completionstatemsg = 'unknown';
+            } 
                 mtrace("FLYEASTWOOD: Sending activity completion email to student $user->email");        
                 EmailTemplate::send('activity_completion_updated_user', array('course' => $course, 'user' => $user, 'cm' => $cm, 'completion' => $data));            
 die();
