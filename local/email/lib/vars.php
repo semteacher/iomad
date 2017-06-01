@@ -32,6 +32,8 @@ class EmailVars {
     protected $event = null;
     protected $iomadcertificate = null;
     protected $iomadcertificateissues = null;
+    protected $cm = null;
+    protected $completion = null;
 
     protected $blank = "[blank]";
 
@@ -41,7 +43,7 @@ class EmailVars {
      * Sets up and retrieves the API objects
      *
      **/
-    public function __construct($company, $user, $course, $invoice, $classroom, $license, $sender, $approveuser, $event, $iomadcertificate, $iomadcertificateissues) {
+    public function __construct($company, $user, $course, $invoice, $classroom, $license, $sender, $approveuser, $event, $iomadcertificate, $iomadcertificateissues, $cm, $completion) {
         $this->company =& $company;
         $this->user =& $user;
         $this->invoice =& $invoice;
@@ -52,6 +54,8 @@ class EmailVars {
         $this->event =& $event;
         $this->iomadcertificate =& $iomadcertificate;
         $this->iomadcertificateissues =& $iomadcertificateissues;
+        $this->cm =& $cm;
+        $this->completion =& $completion;
         
         if (!isset($this->company)) {
             if (isset($user->id)) {
@@ -120,7 +124,11 @@ class EmailVars {
             //Certificate fields.
                         'Iomadcertificate_Expireemailreminde',
             //Certificate issue fields.
-                        'Iomadcertificateissues_Code'
+                        'Iomadcertificateissues_Code', 'IssuedCertificateStudentFullName',
+            //Course Modules fields.
+                        'Cm_Name', 'Cm_ModName',
+            //Activity Completion fields.
+                        'Completion_CompletionStateMsg', 'CompletionTimeModifiedOn', 'CompletionStudentFullName' 
         );
 
         // Add all methods of this class that are ok2call to the $result array as well.
@@ -231,11 +239,17 @@ class EmailVars {
      *
      **/    
     function IssuedCertificateExpiredOn() {
-        $certexpiredate = '=Date_converting_error=';
-        if ($this->iomadcertificateissues->timeexpiried) {
-            $certexpiredate = userdate($this->iomadcertificateissues->timeexpiried);
-        }
-        return $certexpiredate;
+        return $this->getUserdate($this->iomadcertificateissues->timeexpiried);
+    }
+
+    /**
+     * Provide the CompletionTimeModifiedOn method for templates.
+     *
+     * returns date;
+     *
+     **/    
+    function CompletionTimeModifiedOn() {
+        return $this->getUserdate($this->completion->timemodified);
     }
     
      /**
@@ -245,9 +259,46 @@ class EmailVars {
      *
      **/    
     function IssuedCertificateStudentFullName() {
-        global $DB;
-        
-        $userDetails = $DB->get_record('user', array('id' => $this->iomadcertificateissues->userid));
-        return $userDetails->firstname . " " . $userDetails->lastname;
+        return $this->getUserFullName($this->iomadcertificateissues->userid);
     }
+    
+     /**
+     * Provide the CompletionStudentFullName method for templates.
+     *
+     * returns text;
+     *
+     **/ 
+    function CompletionStudentFullName() {
+        return $this->getUserFullName($this->completion->userid);
+    }
+
+    /**
+     * Provide the getUserdate method for other methods.
+     *
+     * returns date;
+     *
+     **/    
+    private function getUserdate($datetimevalue) {
+        if ($datetimevalue) {
+            return userdate($datetimevalue);
+        } else {
+            return return get_string('err_date_conv', 'local_email');
+        }
+    }
+    
+     /**
+     * Provide the getUserFullName method for other methods.
+     *
+     * returns text;
+     *
+     **/    
+    private function getUserFullName($userid) {
+        global $DB;
+
+        if ($userDetails = $DB->get_record('user', array('id' => $userid))){
+            return $userDetails->firstname . " " . $userDetails->lastname;
+        } else {
+            return get_string('err_fetch_user', 'local_email', $userid);
+        }
+    }    
 }
