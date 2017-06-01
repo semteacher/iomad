@@ -1105,7 +1105,7 @@ var_dump($data);
             if ($teachers = $this->course_get_teachers($user, $course, $cm)) {
 var_dump($teachers);           
                 foreach ($teachers as $teacher) {
-                    $results = EmailTemplate::send('activity_completion_updated_user', array('course' => $course, 'user' => $teacher, 'cm' => $cm, 'completion' => $data));
+                    $results = EmailTemplate::send('activity_completion_updated_manager', array('course' => $course, 'user' => $teacher, 'cm' => $cm, 'completion' => $data));
                     mtrace("FLYEASTWOOD: Sending activity completion email to teacher $teacher->username - got - $results");
                 }
             }
