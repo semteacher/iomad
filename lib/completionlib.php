@@ -36,6 +36,8 @@ require_once $CFG->dirroot.'/completion/criteria/completion_criteria.php';
 require_once $CFG->dirroot.'/completion/completion_completion.php';
 require_once $CFG->dirroot.'/completion/completion_criteria_completion.php';
 
+require_once($CFG->dirroot.'/local/email/lib.php');
+
 
 /**
  * The completion system is enabled in this site/course
@@ -547,6 +549,7 @@ class completion_info {
         // the possible result of this change. If the change is to COMPLETE and the
         // current value is one of the COMPLETE_xx subtypes, ignore that as well
         $current = $this->get_data($cm, false, $userid);
+//var_dump('libcomptest: current '.$current->completionstate);        
         if ($possibleresult == $current->completionstate ||
             ($possibleresult == COMPLETION_COMPLETE &&
                 ($current->completionstate == COMPLETION_COMPLETE_PASS ||
@@ -572,9 +575,14 @@ class completion_info {
 
         // If changed, update
         if ($newstate != $current->completionstate) {
+//var_dump('libcomptest: newstate '.$newstate);
             $current->completionstate = $newstate;
             $current->timemodified    = time();
             $this->internal_set_data($cm, $current);
+            $this->send_emails($cm, $current);
+//var_dump($current);
+//var_dump($cm);
+//die();            
         }
     }
 
@@ -1036,6 +1044,113 @@ class completion_info {
         $event->add_record_snapshot('course_modules_completion', $data);
         $event->trigger();
     }
+    
+    /**
+     * Send completion notification for a particular coursemodule and user (user is
+     * determined from $data) to user/teacher via email.
+     *
+     * (Internal function. Not private, so we can unit-test it.)
+     *
+     * @param stdClass|cm_info $cm Activity
+     * @param stdClass $data Data about completion for that user
+     */
+    public function send_emails($cm, $data) {
+        global $USER, $DB;
+var_dump('libcomptest-sendemails: newstate '.$data->completionstate);
+
+var_dump($cm);
+            mtrace("FLYEASTWOOD: activity completion - user userid $data->userid");
+            if (!$user = $DB->get_record('user', array('id' => $data->userid))) { 
+                continue;
+            }
+            mtrace("FLYEASTWOOD: activity completion - user courseid $cm->course");
+            if (!$course = $DB->get_record('course', array('id' => $cm->course))) { 
+                continue;
+            }
+            //mtrace("FLYEASTWOOD: activity completion - user companyid $compuser->companyid");    
+            //if (!$company = $DB->get_record('company', array('id' => $compuser->companyid))) { 
+            //    continue;
+            //}
+            switch ($data->completionstate)
+            {
+            case COMPLETION_INCOMPLETE: $data->completionstatemsg = 'incomplete'; break;
+            case COMPLETION_COMPLETE: $data->completionstatemsg = 'complete'; break;
+            case COMPLETION_COMPLETE_PASS: $data->completionstatemsg = 'pass'; break;
+            case COMPLETION_COMPLETE_FAIL: $data->completionstatemsg = 'fail'; break;
+            default : $data->completionstatemsg = 'unknown';
+            }
+var_dump($data);
+                mtrace("FLYEASTWOOD: Sending activity completion email to student $user->email");        
+                EmailTemplate::send('activity_completion_updated_user', array('course' => $course, 'user' => $user, 'cm' => $cm, 'completion' => $data));
+            
+            //$teachers = $this->course_get_teachers($user, $course, $cm);
+
+            if ($teachers = $this->course_get_teachers($user, $course, $cm)) {
+var_dump($teachers);           
+                foreach ($teachers as $teacher) {
+                    $results = EmailTemplate::send('activity_completion_updated_manager', array('course' => $course, 'user' => $teacher, 'cm' => $cm, 'completion' => $data));
+                    mtrace("FLYEASTWOOD: Sending activity completion email to teacher $teacher->username - got - $results");
+                }
+            }
+                 
+die();
+            //$data->completionstate;   
+    }
+
+/**
+ * Returns a list of teachers by group
+ * for sending email alerts to teachers
+ *
+ * @param stdClass $iomadcertificate
+ * @param stdClass $user
+ * @param stdClass $course
+ * @param stdClass $cm
+ * @return array the teacher array
+ */
+    public function course_get_teachers($user, $course, $cm) {
+    global $USER, $DB;
+
+    $context = context_module::instance($cm->id);
+    $potteachers = get_users_by_capability($context, 'mod/iomadcertificate:manage',
+        '', '', '', '', '', '', false, false);
+    if (empty($potteachers)) {
+        return array();
+    }
+    $teachers = array();
+    if (groups_get_activity_groupmode($cm, $course) == SEPARATEGROUPS) {   // Separate groups are being used
+        if ($groups = groups_get_all_groups($course->id, $user->id)) {  // Try to find all groups
+            foreach ($groups as $group) {
+                foreach ($potteachers as $t) {
+                    if ($t->id == $user->id) {
+                        continue; // do not send self
+                    }
+                    if (groups_is_member($group->id, $t->id)) {
+                        $teachers[$t->id] = $t;
+                    }
+                }
+            }
+        } else {
+            // user not in group, try to find teachers without group
+            foreach ($potteachers as $t) {
+                if ($t->id == $USER->id) {
+                    continue; // do not send self
+                }
+                if (!groups_get_all_groups($course->id, $t->id)) { //ugly hack
+                    $teachers[$t->id] = $t;
+                }
+            }
+        }
+    } else {
+        foreach ($potteachers as $t) {
+            if ($t->id == $USER->id) {
+                continue; // do not send self
+            }
+            $teachers[$t->id] = $t;
+        }
+    }
+
+    return $teachers;
+}
 
      /**
      * Return whether or not the course has activities with completion enabled.
