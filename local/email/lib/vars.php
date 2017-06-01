@@ -128,7 +128,7 @@ class EmailVars {
             //Course Modules fields.
                         'Cm_Name', 'Cm_ModName',
             //Activity Completion fields.
-                        'Completion_CompletionStateMsg', 'CompletionTimeModifiedOn'
+                        'Completion_CompletionStateMsg', 'CompletionTimeModifiedOn' 
         );
 
         // Add all methods of this class that are ok2call to the $result array as well.
@@ -282,4 +282,24 @@ class EmailVars {
         $userDetails = $DB->get_record('user', array('id' => $this->iomadcertificateissues->userid));
         return $userDetails->firstname . " " . $userDetails->lastname;
     }
+    
+    function CompletionStudentFullName() {
+        return $this->getStudentFullName($this->completion->userid);
+    }
+    
+     /**
+     * Provide the getStudentFullName method for templates.
+     *
+     * returns text;
+     *
+     **/    
+    protected function getStudentFullName($userid) {
+        global $DB;
+        
+        if ($userDetails = $DB->get_record('user', array('id' => $userid))){
+            return $userDetails->firstname . " " . $userDetails->lastname;
+        } else {
+            return 'Error fetching user with id='.$userid;
+        }
+    }    
 }

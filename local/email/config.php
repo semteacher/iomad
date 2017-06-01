@@ -49,6 +49,7 @@ $emailarray = array('approval',
                     'cert_expiry_warn_user',
                     'cert_expiry_warn_manager',
                     'activity_completion_updated_user',
+                    'activity_completion_updated_manager',
                     'user_create',
                     'user_reset');
 foreach ($emailarray as $templatename) {
