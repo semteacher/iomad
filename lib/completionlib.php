@@ -1074,7 +1074,7 @@ class completion_info {
     public function send_emails($cm, $data) {
         global $USER, $DB;
 var_dump('libcomptest-sendemails: newstate '.$data->completionstate);
-var_dump($data);
+
 var_dump($cm);
             mtrace("FLYEASTWOOD: activity completion - user userid $data->userid");
             if (!$user = $DB->get_record('user', array('id' => $data->userid))) { 
@@ -1095,13 +1095,72 @@ var_dump($cm);
             case COMPLETION_COMPLETE_PASS: $data->completionstatemsg = 'pass'; break;
             case COMPLETION_COMPLETE_FAIL: $data->completionstatemsg = 'fail'; break;
             default : $data->completionstatemsg = 'unknown';
-            } 
+            }
+var_dump($data);
                 mtrace("FLYEASTWOOD: Sending activity completion email to student $user->email");        
-                EmailTemplate::send('activity_completion_updated_user', array('course' => $course, 'user' => $user, 'cm' => $cm, 'completion' => $data));            
+                EmailTemplate::send('activity_completion_updated_user', array('course' => $course, 'user' => $user, 'cm' => $cm, 'completion' => $data));
+            
+            $teachers = course_get_teachers($user, $course, $cm);
+var_dump($teachers);
+                 
 die();
-            //$data->completionstate;        
-   
-    }    
+            //$data->completionstate;   
+    }
+
+/**
+ * Returns a list of teachers by group
+ * for sending email alerts to teachers
+ *
+ * @param stdClass $iomadcertificate
+ * @param stdClass $user
+ * @param stdClass $course
+ * @param stdClass $cm
+ * @return array the teacher array
+ */
+function course_get_teachers($user, $course, $cm) {
+    global $USER, $DB;
+
+    $context = context_module::instance($cm->id);
+    $potteachers = get_users_by_capability($context, 'mod/iomadcertificate:manage',
+        '', '', '', '', '', '', false, false);
+    if (empty($potteachers)) {
+        return array();
+    }
+    $teachers = array();
+    if (groups_get_activity_groupmode($cm, $course) == SEPARATEGROUPS) {   // Separate groups are being used
+        if ($groups = groups_get_all_groups($course->id, $user->id)) {  // Try to find all groups
+            foreach ($groups as $group) {
+                foreach ($potteachers as $t) {
+                    if ($t->id == $user->id) {
+                        continue; // do not send self
+                    }
+                    if (groups_is_member($group->id, $t->id)) {
+                        $teachers[$t->id] = $t;
+                    }
+                }
+            }
+        } else {
+            // user not in group, try to find teachers without group
+            foreach ($potteachers as $t) {
+                if ($t->id == $USER->id) {
+                    continue; // do not send self
+                }
+                if (!groups_get_all_groups($course->id, $t->id)) { //ugly hack
+                    $teachers[$t->id] = $t;
+                }
+            }
+        }
+    } else {
+        foreach ($potteachers as $t) {
+            if ($t->id == $USER->id) {
+                continue; // do not send self
+            }
+            $teachers[$t->id] = $t;
+        }
+    }
+
+    return $teachers;
+}
 
      /**
      * Return whether or not the course has activities with completion enabled.
