@@ -1100,8 +1100,15 @@ var_dump($data);
                 mtrace("FLYEASTWOOD: Sending activity completion email to student $user->email");        
                 EmailTemplate::send('activity_completion_updated_user', array('course' => $course, 'user' => $user, 'cm' => $cm, 'completion' => $data));
             
-            $teachers = course_get_teachers($user, $course, $cm);
-var_dump($teachers);
+            //$teachers = $this->course_get_teachers($user, $course, $cm);
+
+            if ($teachers = $this->course_get_teachers($user, $course, $cm)) {
+var_dump($teachers);           
+                foreach ($teachers as $teacher) {
+                    $results = EmailTemplate::send('activity_completion_updated_user', array('course' => $course, 'user' => $teacher, 'cm' => $cm, 'completion' => $data));
+                    mtrace("FLYEASTWOOD: Sending activity completion email to teacher $teacher->username - got - $results");
+                }
+            }
                  
 die();
             //$data->completionstate;   
@@ -1117,7 +1124,7 @@ die();
  * @param stdClass $cm
  * @return array the teacher array
  */
-function course_get_teachers($user, $course, $cm) {
+    public function course_get_teachers($user, $course, $cm) {
     global $USER, $DB;
 
     $context = context_module::instance($cm->id);
