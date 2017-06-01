@@ -262,7 +262,7 @@ class EmailVars {
      * returns date;
      *
      **/    
-    protected function getUserdate($datetimevalue) {
+    private function getUserdate($datetimevalue) {
         $returndate = '=Date_converting_error=';
         if ($datetimevalue) {
             $returndate = userdate($datetimevalue);
@@ -293,7 +293,7 @@ class EmailVars {
      * returns text;
      *
      **/    
-    protected function getStudentFullName($userid) {
+    private function getStudentFullName($userid) {
         global $DB;
         
         if ($userDetails = $DB->get_record('user', array('id' => $userid))){
