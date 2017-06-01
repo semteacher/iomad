@@ -128,7 +128,7 @@ class EmailVars {
             //Course Modules fields.
                         'Cm_Name', 'Cm_ModName',
             //Activity Completion fields.
-                        'Completion_CompletionStateMsg', 'CompletionTimeModifiedOn' 
+                        'Completion_CompletionStateMsg', 'CompletionTimeModifiedOn', 'CompletionStudentFullName' 
         );
 
         // Add all methods of this class that are ok2call to the $result array as well.
