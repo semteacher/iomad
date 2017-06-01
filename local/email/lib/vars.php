@@ -239,11 +239,7 @@ class EmailVars {
      *
      **/    
     function IssuedCertificateExpiredOn() {
-        $certexpiredate = '=Date_converting_error=';
-        if ($this->iomadcertificateissues->timeexpiried) {
-            $certexpiredate = userdate($this->iomadcertificateissues->timeexpiried);
-        }
-        return $certexpiredate;
+        return $this->getUserdate($this->iomadcertificateissues->timeexpiried);
     }
 
     /**
@@ -254,20 +250,6 @@ class EmailVars {
      **/    
     function CompletionTimeModifiedOn() {
         return $this->getUserdate($this->completion->timemodified);
-    }
-    
-    /**
-     * Provide the CompletionTimeModifiedOn method for templates.
-     *
-     * returns date;
-     *
-     **/    
-    private function getUserdate($datetimevalue) {
-        $returndate = '=Date_converting_error=';
-        if ($datetimevalue) {
-            $returndate = userdate($datetimevalue);
-        }
-        return $returndate;
     }
     
      /**
@@ -288,6 +270,20 @@ class EmailVars {
      **/ 
     function CompletionStudentFullName() {
         return $this->getUserFullName($this->completion->userid);
+    }
+
+    /**
+     * Provide the getUserdate method for other methods.
+     *
+     * returns date;
+     *
+     **/    
+    private function getUserdate($datetimevalue) {
+        if ($datetimevalue) {
+            return userdate($datetimevalue);
+        } else {
+            return return get_string('err_date_conv', 'local_email');
+        }
     }
     
      /**
