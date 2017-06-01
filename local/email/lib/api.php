@@ -31,6 +31,10 @@ class EmailTemplate {
     protected $approveuser = null;
     protected $event = null;
     protected $due = null;
+    protected $iomadcertificate = null;
+    protected $iomadcertificateissues = null;
+    protected $cm = null;
+    protected $completion = null;    
 
     /**
      * Send an email to (a) specified user(s)
@@ -128,7 +132,10 @@ class EmailTemplate {
         $this->license = array_key_exists('license', $options) ? $options['license'] : null;
         $this->headers = array_key_exists('headers', $options) ? $options['headers'] : null;
         $this->company = array_key_exists('company', $options) ? $options['company'] : null;
-
+        $this->iomadcertificate = array_key_exists('iomadcertificate', $options) ? $options['iomadcertificate'] : null;
+        $this->iomadcertificateissues = array_key_exists('iomadcertificateissues', $options) ? $options['iomadcertificateissues'] : null;
+        $this->cm = array_key_exists('cm', $options) ? $options['cm'] : null;
+        $this->completion = array_key_exists('completion', $options) ? $options['completion'] : null;
         if (!isset($user)) {
             $user =& $USER;
         }
@@ -398,7 +405,11 @@ class EmailTemplate {
                               $this->license,
                               $this->sender,
                               $this->approveuser,
-                              $this->event);
+                              $this->event,
+                              $this->iomadcertificate,
+                              $this->iomadcertificateissues,
+                              $this->cm,
+                              $this->completion);
 
         foreach ($amethods as $funcname) {
             $replacement = "{" . $funcname . "}";

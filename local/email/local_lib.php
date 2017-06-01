@@ -44,6 +44,12 @@ function local_email_get_templates() {
                         'completion_warn_manager',
                         'expiry_warn_user',
                         'expiry_warn_manager',
+                        'cert_expire_user',
+                        'cert_expire_manager',
+                        'cert_expiry_warn_user',
+                        'cert_expiry_warn_manager',
+                        'activity_completion_updated_user',
+                        'activity_completion_updated_manager',
                         'user_create',
                         'user_reset');
 
