@@ -332,6 +332,7 @@ $string['completion_expiry_warn_supervisor_subject'] = 'Notice: Course {Course_F
 $string['completion_expiry_warn_supervisor_body'] = 'The training for {User_FirstName} {User_LastName} in course {Course_FullName} will expiry shortly.  Please arrange for them to retake this training if appropriate.';
 
 //flyeastwood
+$string['err_fetch_user'] = 'Failed to fetch user data for userid=\'{$a}\'';
 $string['cert_expiry_warn_user_subject'] = 'Notice: Certificate {Iomadcertificateissues_Code} in {Course_FullName} will expire soon.';
 $string['cert_expiry_warn_user_body'] = 'Dear {User_FirstName},
 your certificate {Iomadcertificateissues_Code} about training in {Course_FullName} is expiring on {IssuedCertificateExpiredOn} .  Please arrange for re-certification if appropriate';
