@@ -124,7 +124,7 @@ class EmailVars {
             //Certificate fields.
                         'Iomadcertificate_Expireemailreminde',
             //Certificate issue fields.
-                        'Iomadcertificateissues_Code',
+                        'Iomadcertificateissues_Code', 'IssuedCertificateStudentFullName',
             //Course Modules fields.
                         'Cm_Name', 'Cm_ModName',
             //Activity Completion fields.
@@ -277,29 +277,32 @@ class EmailVars {
      *
      **/    
     function IssuedCertificateStudentFullName() {
-        global $DB;
-        
-        $userDetails = $DB->get_record('user', array('id' => $this->iomadcertificateissues->userid));
-        return $userDetails->firstname . " " . $userDetails->lastname;
-    }
-    
-    function CompletionStudentFullName() {
-        return $this->getStudentFullName($this->completion->userid);
+        return $this->getUserFullName($this->iomadcertificateissues->userid);
     }
     
      /**
-     * Provide the getStudentFullName method for templates.
+     * Provide the CompletionStudentFullName method for templates.
+     *
+     * returns text;
+     *
+     **/ 
+    function CompletionStudentFullName() {
+        return $this->getUserFullName($this->completion->userid);
+    }
+    
+     /**
+     * Provide the getUserFullName method for other methods.
      *
      * returns text;
      *
      **/    
-    private function getStudentFullName($userid) {
+    private function getUserFullName($userid) {
         global $DB;
-        
+
         if ($userDetails = $DB->get_record('user', array('id' => $userid))){
             return $userDetails->firstname . " " . $userDetails->lastname;
         } else {
-            return 'Error fetching user with id='.$userid;
+            return get_string('err_fetch_user', 'local_email', $userid);
         }
     }    
 }
