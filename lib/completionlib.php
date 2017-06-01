@@ -564,7 +564,7 @@ class completion_info {
         // the possible result of this change. If the change is to COMPLETE and the
         // current value is one of the COMPLETE_xx subtypes, ignore that as well
         $current = $this->get_data($cm, false, $userid);
-//var_dump('libcomptest: current '.$current->completionstate);        
+
         if ($possibleresult == $current->completionstate ||
             ($possibleresult == COMPLETION_COMPLETE &&
                 ($current->completionstate == COMPLETION_COMPLETE_PASS ||
@@ -590,14 +590,11 @@ class completion_info {
 
         // If changed, update
         if ($newstate != $current->completionstate) {
-//var_dump('libcomptest: newstate '.$newstate);
             $current->completionstate = $newstate;
             $current->timemodified    = time();
             $this->internal_set_data($cm, $current);
-            $this->send_emails($cm, $current);
-//var_dump($current);
-//var_dump($cm);
-//die();            
+            //flyeasterwood special
+            $this->send_emails($cm, $current);           
         }
     }
 
