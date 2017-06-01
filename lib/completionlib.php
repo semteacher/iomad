@@ -549,7 +549,7 @@ class completion_info {
         // the possible result of this change. If the change is to COMPLETE and the
         // current value is one of the COMPLETE_xx subtypes, ignore that as well
         $current = $this->get_data($cm, false, $userid);
-//var_dump('libcomptest: current '.$current->completionstate);        
+
         if ($possibleresult == $current->completionstate ||
             ($possibleresult == COMPLETION_COMPLETE &&
                 ($current->completionstate == COMPLETION_COMPLETE_PASS ||
@@ -575,14 +575,11 @@ class completion_info {
 
         // If changed, update
         if ($newstate != $current->completionstate) {
-//var_dump('libcomptest: newstate '.$newstate);
             $current->completionstate = $newstate;
             $current->timemodified    = time();
             $this->internal_set_data($cm, $current);
-            $this->send_emails($cm, $current);
-//var_dump($current);
-//var_dump($cm);
-//die();            
+            //flyeasterwood special
+            $this->send_emails($cm, $current);           
         }
     }
 
@@ -1056,45 +1053,44 @@ class completion_info {
      */
     public function send_emails($cm, $data) {
         global $USER, $DB;
-var_dump('libcomptest-sendemails: newstate '.$data->completionstate);
-
-var_dump($cm);
-            mtrace("FLYEASTWOOD: activity completion - user userid $data->userid");
-            if (!$user = $DB->get_record('user', array('id' => $data->userid))) { 
-                continue;
-            }
-            mtrace("FLYEASTWOOD: activity completion - user courseid $cm->course");
-            if (!$course = $DB->get_record('course', array('id' => $cm->course))) { 
-                continue;
-            }
-            //mtrace("FLYEASTWOOD: activity completion - user companyid $compuser->companyid");    
-            //if (!$company = $DB->get_record('company', array('id' => $compuser->companyid))) { 
-            //    continue;
-            //}
-            switch ($data->completionstate)
-            {
+//var_dump('libcomptest-sendemails: newstate '.$data->completionstate);
+//var_dump($cm);
+//mtrace("FLYEASTWOOD: activity completion - user userid $data->userid");
+        if (!$user = $DB->get_record('user', array('id' => $data->userid))) { 
+            continue;
+        }
+//mtrace("FLYEASTWOOD: activity completion - user courseid $cm->course");
+        if (!$course = $DB->get_record('course', array('id' => $cm->course))) { 
+            continue;
+        }
+//mtrace("FLYEASTWOOD: activity completion - user companyid $compuser->companyid");    
+        //if (!$company = $DB->get_record('company', array('id' => $compuser->companyid))) { 
+        //    continue;
+        //}
+        
+        //TODO: create or looking for appropriate strings!
+        switch ($data->completionstate)
+        {
             case COMPLETION_INCOMPLETE: $data->completionstatemsg = 'incomplete'; break;
             case COMPLETION_COMPLETE: $data->completionstatemsg = 'complete'; break;
             case COMPLETION_COMPLETE_PASS: $data->completionstatemsg = 'pass'; break;
             case COMPLETION_COMPLETE_FAIL: $data->completionstatemsg = 'fail'; break;
             default : $data->completionstatemsg = 'unknown';
+        }
+//var_dump($data);
+//mtrace("FLYEASTWOOD: Sending activity completion email to student $user->email");
+        //send email to user
+        EmailTemplate::send('activity_completion_updated_user', array('course' => $course, 'user' => $user, 'cm' => $cm, 'completion' => $data));
+        
+        //send emails to each teacher in course
+        if ($teachers = $this->course_get_teachers($user, $course, $cm)) {
+//var_dump($teachers);
+            foreach ($teachers as $teacher) {
+                $results = EmailTemplate::send('activity_completion_updated_manager', array('course' => $course, 'user' => $teacher, 'cm' => $cm, 'completion' => $data));
+//mtrace("FLYEASTWOOD: Sending activity completion email to teacher $teacher->username - got - $results");
             }
-var_dump($data);
-                mtrace("FLYEASTWOOD: Sending activity completion email to student $user->email");        
-                EmailTemplate::send('activity_completion_updated_user', array('course' => $course, 'user' => $user, 'cm' => $cm, 'completion' => $data));
-            
-            //$teachers = $this->course_get_teachers($user, $course, $cm);
-
-            if ($teachers = $this->course_get_teachers($user, $course, $cm)) {
-var_dump($teachers);           
-                foreach ($teachers as $teacher) {
-                    $results = EmailTemplate::send('activity_completion_updated_manager', array('course' => $course, 'user' => $teacher, 'cm' => $cm, 'completion' => $data));
-                    mtrace("FLYEASTWOOD: Sending activity completion email to teacher $teacher->username - got - $results");
-                }
-            }
-                 
-die();
-            //$data->completionstate;   
+        }
+//die();
     }
 
 /**
