@@ -336,18 +336,24 @@ $string['err_fetch_user'] = 'Failed to fetch user data for userid=\'{$a}\'';
 $string['err_date_conv'] = 'Failed to convert date value';
 $string['cert_expiry_warn_user_subject'] = 'Notice: Certificate {Iomadcertificateissues_Code} in {Course_FullName} will expire soon.';
 $string['cert_expiry_warn_user_body'] = 'Dear {User_FirstName},
-your certificate {Iomadcertificateissues_Code} about training in {Course_FullName} is expiring on {IssuedCertificateExpiredOn} .  Please arrange for re-certification if appropriate';
+your certificate {Iomadcertificateissues_Code} about training in {Course_FullName} is expiring on {IssuedCertificateExpiredOn} .  Please arrange for re-certification if appropriate.
+Link to course: {CourseURL}';
 $string['cert_expiry_warn_manager_subject'] = 'Certificate expiry report for {Course_FullName}';
 $string['cert_expiry_warn_manager_body'] = 'Dear {User_FirstName} {User_LastName},
-the following user\'s certificate {Iomadcertificateissues_Code}, awarded to {IssuedCertificateStudentFullName}, is due to expire on {IssuedCertificateExpiredOn}';
+the following user\'s certificate {Iomadcertificateissues_Code}, awarded to {IssuedCertificateStudentFullName}, is due to expire on {IssuedCertificateExpiredOn} .
+Link to course: {CourseURL}';
 $string['cert_expire_user_subject'] = 'Certificate {Iomadcertificateissues_Code} in {Course_FullName} has been expired';
-$string['cert_expire_user_body'] = 'This is to let you know that your certificate {Iomadcertificateissues_Code} about training in {Course_FullName} has been expired.';
+$string['cert_expire_user_body'] = 'This is to let you know that your certificate {Iomadcertificateissues_Code} about training in {Course_FullName} has been expired. 
+Link to course: {CourseURL}';
 $string['cert_expire_manager_subject'] = 'Certificate expired report for {Course_FullName}';
 $string['cert_expire_manager_body'] = 'Dear {User_FirstName} {User_LastName},
-the following user\'s certificate {Iomadcertificateissues_Code} , awarded to {IssuedCertificateStudentFullName}, in {Course_FullName} has been expired due to date {IssuedCertificateExpiredOn}';
+the following user\'s certificate {Iomadcertificateissues_Code} , awarded to {IssuedCertificateStudentFullName}, in {Course_FullName} has been expired due to date {IssuedCertificateExpiredOn} .
+Link to course: {CourseURL}';
 $string['activity_completion_updated_user_subject'] = 'The {Cm_Name} activity in {Course_FullName} has been updated';
 $string['activity_completion_updated_user_body'] = 'Dear {User_FirstName},
-An {Cm_ModName} activity called {Cm_Name} in {Course_FullName} has been updated to the following completion state: "{Completion_CompletionStateMsg}" on {CompletionTimeModifiedOn}';
+A "{Cm_ModName}" activity/resource called "{Cm_Name}" in course "{Course_FullName}" has been updated to the following completion state: "{Completion_CompletionStateMsg}" by you on {CompletionTimeModifiedOn} .
+Link to course: {CourseURL}';
 $string['activity_completion_updated_manager_subject'] = 'The {Cm_Name} activity in {Course_FullName} has been updated';
 $string['activity_completion_updated_manager_body'] = 'Dear {User_FirstName} {User_LastName},
-An {Cm_ModName} activity called {Cm_Name} in {Course_FullName} has been updated to the following completion state: "{Completion_CompletionStateMsg}" by {CompletionStudentFullName} on {CompletionTimeModifiedOn}';
+A "{Cm_ModName}" activity/resource called "{Cm_Name}" in course "{Course_FullName}" has been updated to the following completion state: "{Completion_CompletionStateMsg}" by {CompletionStudentFullName} on {CompletionTimeModifiedOn} .
+Link to course: {CourseURL}';
