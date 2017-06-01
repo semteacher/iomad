@@ -533,6 +533,85 @@ function xmldb_iomadcertificate_upgrade($oldversion=0) {
         // Iomadcertificate savepoint reached.
         upgrade_mod_savepoint(true, 2015111601, 'iomadcertificate');
     }
+    
+    if ($oldversion < 2017052005) {
+        
+        // Define field enablecertexpire to be added to iomadcertificate settings.
+        $table = new xmldb_table('iomadcertificate');
+        $field = new xmldb_field('enablecertexpire', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 1);
+        
+        // Conditionally launch add field enablecertexpire.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Define field validinterval to be added to iomadcertificate settings.
+        $table = new xmldb_table('iomadcertificate');
+        $field = new xmldb_field('validinterval', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 365);
+        
+        // Conditionally launch add field validinterval.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Define field valid2monthend to be added to iomadcertificate settings.
+        $table = new xmldb_table('iomadcertificate');
+        $field = new xmldb_field('valid2monthend', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 1);
+        
+        // Conditionally launch add field valid2monthend.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
 
+        // Define field expireemailnotify to be added to iomadcertificate settings.
+        $table = new xmldb_table('iomadcertificate');
+        $field = new xmldb_field('expireemailnotify', XMLDB_TYPE_INTEGER, '3', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 3);
+        
+        // Conditionally launch add field expireemailnotify.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Define field expireemailreminde to be added to iomadcertificate settings.
+        $table = new xmldb_table('iomadcertificate');
+        $field = new xmldb_field('expireemailreminde', XMLDB_TYPE_INTEGER, '3', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 30);
+        
+        // Conditionally launch add field expireemailreminde.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Define field expireemail to be added to iomadcertificate settings.
+        $table = new xmldb_table('iomadcertificate');
+        $field = new xmldb_field('expireemail', XMLDB_TYPE_INTEGER, '3', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 3);
+        
+        // Conditionally launch add field expireemail.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field printnexpiredate to be added to iomadcertificate settings.
+        $table = new xmldb_table('iomadcertificate');
+        $field = new xmldb_field('printnexpiredate', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 1);
+        
+        // Conditionally launch add field printnexpiredate.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field timeexpiried to be added to iomadcertificate settings.
+        $table = new xmldb_table('iomadcertificate_issues');
+        $field = new xmldb_field('timeexpiried', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0);
+        //TODO: should it is necessary to update expiration date for early issued certificates (instead to set to "0")?
+        
+        // Conditionally launch add field timeexpiried.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Iomadcertificate savepoint reached.
+        upgrade_mod_savepoint(true, 2017052005, 'iomadcertificate');        
+    }
+    
     return true;
 }

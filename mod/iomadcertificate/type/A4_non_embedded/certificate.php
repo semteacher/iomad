@@ -101,6 +101,12 @@ iomadcertificate_print_text($pdf, $x, $y + 112, 'C', 'Times', '', 10, iomadcerti
 if ($iomadcertificate->printhours) {
     iomadcertificate_print_text($pdf, $x, $y + 122, 'C', 'Times', '', 10, get_string('credithours', 'iomadcertificate') . ': ' . $iomadcertificate->printhours);
 }
+
+// Expire options - flywestwood
+if ($iomadcertificate->enablecertexpire == 1) {
+    iomadcertificate_print_text($pdf, $x, $y + 132, 'C', 'freesans', '', 14,  'Expired on: ' . iomadcertificate_get_expiredate($iomadcertificate, $certrecord, $course, $certuser->id));
+}
+
 iomadcertificate_print_text($pdf, $x, $codey, 'C', 'Times', '', 10, iomadcertificate_get_code($iomadcertificate, $certrecord));
 $i = 0;
 if ($iomadcertificate->printteacher) {
