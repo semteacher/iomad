@@ -2961,5 +2961,20 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2017051502.04);
     }
 
+    if ($oldversion < 2016120501.07) {
+
+        // Define field completionemail to be added to course settings.
+        $table = new xmldb_table('course');
+        $field = new xmldb_field('completionemail', XMLDB_TYPE_INTEGER, '4', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 3);
+        
+        // Conditionally launch add field completionemail.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2016120501.07);
+    }
+        
     return true;
 }
