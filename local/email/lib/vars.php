@@ -282,7 +282,7 @@ class EmailVars {
         if ($datetimevalue) {
             return userdate($datetimevalue);
         } else {
-            return return get_string('err_date_conv', 'local_email');
+            return get_string('err_date_conv', 'local_email');
         }
     }
     
