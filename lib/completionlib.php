@@ -1071,23 +1071,20 @@ class completion_info {
      * @param stdClass $data Data about completion for that user
      */
     public function send_emails($cm, $data) {
-        global $USER, $DB;
-//var_dump('libcomptest-sendemails: newstate '.$data->completionstate);
-//var_dump($cm);
-//mtrace("FLYEASTWOOD: activity completion - user userid $data->userid");
+        global $DB;
+
         if (!$user = $DB->get_record('user', array('id' => $data->userid))) { 
             return;
         }
-//mtrace("FLYEASTWOOD: activity completion - user courseid $cm->course");
-        if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
+
+        if (!$this->course) {
             return;
         }
-//mtrace("FLYEASTWOOD: activity completion - user companyid $compuser->companyid"); 
+
         if (!$company = company::get_company_byuserid($data->userid)) {
             return;
         }
         
-        //TODO: create or looking for appropriate strings!
         switch ($data->completionstate)
         {
             case COMPLETION_INCOMPLETE: $data->completionstatemsg = get_string('completion-n', 'completion'); break;
@@ -1096,23 +1093,19 @@ class completion_info {
             case COMPLETION_COMPLETE_FAIL: $data->completionstatemsg = get_string('completion-fail', 'completion'); break;
             default : $data->completionstatemsg = 'unknown';
         }
-//var_dump($data);
-//mtrace("FLYEASTWOOD: Sending activity completion email to student $user->email");
+
         //send email to user
         if ($this->course->completionemail > 1 ) {
             EmailTemplate::send('activity_completion_updated_user', array('course' => $this->course, 'user' => $user, 'cm' => $cm, 'completion' => $data));
         }
         //send emails to each teacher in course
         if ($this->course->completionemail == 1 || $this->course->completionemail == 3) {
-            if ($teachers = $this->course_get_teachers($user, $course, $cm)) {
-//var_dump($teachers);
+            if ($teachers = $this->course_get_teachers($user, $this->course, $cm)) {
                 foreach ($teachers as $teacher) {
                     $results = EmailTemplate::send('activity_completion_updated_manager', array('course' => $this->course, 'user' => $teacher, 'cm' => $cm, 'completion' => $data));
-//mtrace("FLYEASTWOOD: Sending activity completion email to teacher $teacher->username - got - $results");
                 }
             }
         }
-//die();
     }
 
 /**
