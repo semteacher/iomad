@@ -265,6 +265,16 @@ class course_edit_form extends moodleform {
             $mform->addElement('selectyesno', 'enablecompletion', get_string('enablecompletion', 'completion'));
             $mform->setDefault('enablecompletion', $courseconfig->enablecompletion);
             $mform->addHelpButton('enablecompletion', 'enablecompletion', 'completion');
+            
+            //flyeasterwood - send email on completion 
+            $completionemailrecipientoptions['0'] = get_string('no');
+            $completionemailrecipientoptions['1'] = get_string('defaultcoursestudents');
+            $completionemailrecipientoptions['2'] = get_string('defaultcourseteachers');
+            $completionemailrecipientoptions['3'] = get_string('all');            
+            $mform->addElement('select', 'completionemail', get_string('completionemail', 'completion'), $completionemailrecipientoptions);
+            $mform->setDefault('completionemail', 3);
+            $mform->addHelpButton('completionemail', 'completionemail', 'completion');
+            $mform->disabledIf('completionemail', 'enablecompletion', 'eq', 0);
         } else {
             $mform->addElement('hidden', 'enablecompletion');
             $mform->setType('enablecompletion', PARAM_INT);
