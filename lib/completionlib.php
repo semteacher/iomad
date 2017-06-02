@@ -594,7 +594,9 @@ class completion_info {
             $current->timemodified    = time();
             $this->internal_set_data($cm, $current);
             //flyeasterwood special
-            $this->send_emails($cm, $current);           
+            if ($this->course->completionemail > 0) {
+                $this->send_emails($cm, $current);
+            }
         }
     }
 
@@ -1097,14 +1099,17 @@ class completion_info {
 //var_dump($data);
 //mtrace("FLYEASTWOOD: Sending activity completion email to student $user->email");
         //send email to user
-        EmailTemplate::send('activity_completion_updated_user', array('course' => $course, 'user' => $user, 'cm' => $cm, 'completion' => $data));
-        
+        if ($this->course->completionemail > 1 ) {
+            EmailTemplate::send('activity_completion_updated_user', array('course' => $this->course, 'user' => $user, 'cm' => $cm, 'completion' => $data));
+        }
         //send emails to each teacher in course
-        if ($teachers = $this->course_get_teachers($user, $course, $cm)) {
+        if ($this->course->completionemail == 1 || $this->course->completionemail == 3) {
+            if ($teachers = $this->course_get_teachers($user, $course, $cm)) {
 //var_dump($teachers);
-            foreach ($teachers as $teacher) {
-                $results = EmailTemplate::send('activity_completion_updated_manager', array('course' => $course, 'user' => $teacher, 'cm' => $cm, 'completion' => $data));
+                foreach ($teachers as $teacher) {
+                    $results = EmailTemplate::send('activity_completion_updated_manager', array('course' => $this->course, 'user' => $teacher, 'cm' => $cm, 'completion' => $data));
 //mtrace("FLYEASTWOOD: Sending activity completion email to teacher $teacher->username - got - $results");
+                }
             }
         }
 //die();

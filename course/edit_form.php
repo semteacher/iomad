@@ -268,8 +268,8 @@ class course_edit_form extends moodleform {
             
             //flyeasterwood - send email on completion 
             $completionemailrecipientoptions['0'] = get_string('no');
-            $completionemailrecipientoptions['1'] = get_string('defaultcoursestudents');
-            $completionemailrecipientoptions['2'] = get_string('defaultcourseteachers');
+            $completionemailrecipientoptions['1'] = get_string('defaultcourseteachers');
+            $completionemailrecipientoptions['2'] = get_string('defaultcoursestudents');
             $completionemailrecipientoptions['3'] = get_string('all');            
             $mform->addElement('select', 'completionemail', get_string('completionemail', 'completion'), $completionemailrecipientoptions);
             $mform->setDefault('completionemail', 3);
