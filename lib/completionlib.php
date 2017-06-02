@@ -35,9 +35,9 @@ require_once $CFG->dirroot.'/completion/completion_aggregation.php';
 require_once $CFG->dirroot.'/completion/criteria/completion_criteria.php';
 require_once $CFG->dirroot.'/completion/completion_completion.php';
 require_once $CFG->dirroot.'/completion/completion_criteria_completion.php';
-
+//flyeasterwood
 require_once($CFG->dirroot.'/local/email/lib.php');
-
+require_once($CFG->dirroot.'/local/iomad/lib/company.php');
 
 /**
  * The completion system is enabled in this site/course
@@ -1076,24 +1076,24 @@ class completion_info {
 //var_dump($cm);
 //mtrace("FLYEASTWOOD: activity completion - user userid $data->userid");
         if (!$user = $DB->get_record('user', array('id' => $data->userid))) { 
-            continue;
+            return;
         }
 //mtrace("FLYEASTWOOD: activity completion - user courseid $cm->course");
-        if (!$course = $DB->get_record('course', array('id' => $cm->course))) { 
-            continue;
+        if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
+            return;
         }
-//mtrace("FLYEASTWOOD: activity completion - user companyid $compuser->companyid");    
-        //if (!$company = $DB->get_record('company', array('id' => $compuser->companyid))) { 
-        //    continue;
-        //}
+//mtrace("FLYEASTWOOD: activity completion - user companyid $compuser->companyid"); 
+        if (!$company = company::get_company_byuserid($data->userid)) {
+            return;
+        }
         
         //TODO: create or looking for appropriate strings!
         switch ($data->completionstate)
         {
-            case COMPLETION_INCOMPLETE: $data->completionstatemsg = 'incomplete'; break;
-            case COMPLETION_COMPLETE: $data->completionstatemsg = 'complete'; break;
-            case COMPLETION_COMPLETE_PASS: $data->completionstatemsg = 'pass'; break;
-            case COMPLETION_COMPLETE_FAIL: $data->completionstatemsg = 'fail'; break;
+            case COMPLETION_INCOMPLETE: $data->completionstatemsg = get_string('completion-n', 'completion'); break;
+            case COMPLETION_COMPLETE: $data->completionstatemsg = get_string('completion-y', 'completion'); break;
+            case COMPLETION_COMPLETE_PASS: $data->completionstatemsg = get_string('completion-pass', 'completion'); break;
+            case COMPLETION_COMPLETE_FAIL: $data->completionstatemsg = get_string('completion-fail', 'completion'); break;
             default : $data->completionstatemsg = 'unknown';
         }
 //var_dump($data);
