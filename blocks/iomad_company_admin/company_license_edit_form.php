@@ -105,10 +105,10 @@ class company_license_form extends company_moodleform {
             $mform->addElement('hidden', 'designatedcompany', 0);
             $mform->setType('designatedcompany', PARAM_INT);
         } else {
-            $company = new company($this->selectedcompany);
+            $licenseinfo = $DB->get_record('companylicense', array('id' => $this->parentid));
+            $company = new company($licenseinfo->companyid);
             $companylist = $company->get_child_companies_select(false);
             $mform->addElement('header', 'header', get_string('split_licenses', 'block_iomad_company_admin'));
-            $licenseinfo = $DB->get_record('companylicense', array('id' => $this->parentid));
             $this->free = $licenseinfo->allocation - $licenseinfo->used;
             $mform->addElement('static', 'parentlicensename', get_string('parentlicensename', 'block_iomad_company_admin') . ': ' . $licenseinfo->name);
             $mform->addElement('static', 'parentlicenseused', get_string('parentlicenseused', 'block_iomad_company_admin') . ': ' . $licenseinfo->used);
@@ -150,6 +150,8 @@ class company_license_form extends company_moodleform {
                         'required', null, 'client');
         $mform->setType('allocation', PARAM_MULTILANG);
 
+        $mform->addElement('hidden', 'courseselector', 0);
+        $mform->setType('expirydate', PARAM_INT);
         $mform->addElement('html', "<div class='fitem'><div class='fitemtitle'>" .
                            get_string('selectlicensecourse', 'block_iomad_company_admin').
                            "</div><div class='felement'>");
@@ -182,7 +184,20 @@ class company_license_form extends company_moodleform {
             $free = $parentlicense->allocation - $parentlicense->used + $weighting;
             if ($data['allocation'] > $free) {
                 $errors['allocation'] = get_string('licensenotenough', 'block_iomad_company_admin');
-            }  
+            }
+        }
+
+        // Did we get passed any courses?
+        if (empty($this->currentcourses->get_selected_courses())) {
+            $errors['allocation'] = get_string('select_license_courses', 'block_iomad_company_admin');
+        }
+        // Is the value for length appropriate?
+        if ($data['validlength'] < 1 ) {
+            $errors['validlegth'] = get_string('invalidnumber', 'block_iomad_company_admin');
+        }
+        // Did we get passed any courses?
+        if ($data['allocation'] < 1 ) {
+            $errors['allocation'] = get_string('invalidnumber', 'block_iomad_company_admin');
         }
         return $errors;
     }
@@ -211,8 +226,6 @@ require_login();
 // Set the companyid
 $companyid = iomad::get_my_companyid($context);
 $company = new company($companyid);
-
-echo "licenseid = $licenseid , companyid = $companyid </br>";
 
 if (empty($parentid)) {
     if (!empty($licenseid) && $company->is_child_license($licenseid)) {
