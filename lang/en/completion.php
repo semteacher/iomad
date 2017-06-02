@@ -182,3 +182,5 @@ $string['viewingactivity'] = 'Viewing the {$a}';
 $string['writingcompletiondata'] = 'Writing completion data';
 $string['xdays'] = '{$a} days';
 $string['yourprogress'] = 'Your progress';
+$string['completionemail'] = 'Send emails on update to:'; //flyeasterwood
+$string['completionemail_help'] = 'Notification emails will be sent on each completion update to students, teachers or all them'; //flyeasterwood

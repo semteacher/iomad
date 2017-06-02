@@ -35,9 +35,9 @@ require_once $CFG->dirroot.'/completion/completion_aggregation.php';
 require_once $CFG->dirroot.'/completion/criteria/completion_criteria.php';
 require_once $CFG->dirroot.'/completion/completion_completion.php';
 require_once $CFG->dirroot.'/completion/completion_criteria_completion.php';
-
+//flyeasterwood
 require_once($CFG->dirroot.'/local/email/lib.php');
-
+require_once($CFG->dirroot.'/local/iomad/lib/company.php');
 
 /**
  * The completion system is enabled in this site/course
@@ -579,7 +579,9 @@ class completion_info {
             $current->timemodified    = time();
             $this->internal_set_data($cm, $current);
             //flyeasterwood special
-            $this->send_emails($cm, $current);           
+            if ($this->course->completionemail > 0) {
+                $this->send_emails($cm, $current);
+            }
         }
     }
 
@@ -1052,45 +1054,41 @@ class completion_info {
      * @param stdClass $data Data about completion for that user
      */
     public function send_emails($cm, $data) {
-        global $USER, $DB;
-//var_dump('libcomptest-sendemails: newstate '.$data->completionstate);
-//var_dump($cm);
-//mtrace("FLYEASTWOOD: activity completion - user userid $data->userid");
+        global $DB;
+
         if (!$user = $DB->get_record('user', array('id' => $data->userid))) { 
-            continue;
+            return;
         }
-//mtrace("FLYEASTWOOD: activity completion - user courseid $cm->course");
-        if (!$course = $DB->get_record('course', array('id' => $cm->course))) { 
-            continue;
+
+        if (!$this->course) {
+            return;
         }
-//mtrace("FLYEASTWOOD: activity completion - user companyid $compuser->companyid");    
-        //if (!$company = $DB->get_record('company', array('id' => $compuser->companyid))) { 
-        //    continue;
-        //}
+
+        if (!$company = company::get_company_byuserid($data->userid)) {
+            return;
+        }
         
-        //TODO: create or looking for appropriate strings!
         switch ($data->completionstate)
         {
-            case COMPLETION_INCOMPLETE: $data->completionstatemsg = 'incomplete'; break;
-            case COMPLETION_COMPLETE: $data->completionstatemsg = 'complete'; break;
-            case COMPLETION_COMPLETE_PASS: $data->completionstatemsg = 'pass'; break;
-            case COMPLETION_COMPLETE_FAIL: $data->completionstatemsg = 'fail'; break;
+            case COMPLETION_INCOMPLETE: $data->completionstatemsg = get_string('completion-n', 'completion'); break;
+            case COMPLETION_COMPLETE: $data->completionstatemsg = get_string('completion-y', 'completion'); break;
+            case COMPLETION_COMPLETE_PASS: $data->completionstatemsg = get_string('completion-pass', 'completion'); break;
+            case COMPLETION_COMPLETE_FAIL: $data->completionstatemsg = get_string('completion-fail', 'completion'); break;
             default : $data->completionstatemsg = 'unknown';
         }
-//var_dump($data);
-//mtrace("FLYEASTWOOD: Sending activity completion email to student $user->email");
+
         //send email to user
-        EmailTemplate::send('activity_completion_updated_user', array('course' => $course, 'user' => $user, 'cm' => $cm, 'completion' => $data));
-        
+        if ($this->course->completionemail > 1 ) {
+            EmailTemplate::send('activity_completion_updated_user', array('course' => $this->course, 'user' => $user, 'cm' => $cm, 'completion' => $data));
+        }
         //send emails to each teacher in course
-        if ($teachers = $this->course_get_teachers($user, $course, $cm)) {
-//var_dump($teachers);
-            foreach ($teachers as $teacher) {
-                $results = EmailTemplate::send('activity_completion_updated_manager', array('course' => $course, 'user' => $teacher, 'cm' => $cm, 'completion' => $data));
-//mtrace("FLYEASTWOOD: Sending activity completion email to teacher $teacher->username - got - $results");
+        if ($this->course->completionemail == 1 || $this->course->completionemail == 3) {
+            if ($teachers = $this->course_get_teachers($user, $this->course, $cm)) {
+                foreach ($teachers as $teacher) {
+                    $results = EmailTemplate::send('activity_completion_updated_manager', array('course' => $this->course, 'user' => $teacher, 'cm' => $cm, 'completion' => $data));
+                }
             }
         }
-//die();
     }
 
 /**
