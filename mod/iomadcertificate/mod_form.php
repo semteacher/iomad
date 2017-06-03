@@ -35,15 +35,7 @@ require_once($CFG->dirroot.'/local/iomad_settings/certificate/mod_form_lib.php')
 class mod_iomadcertificate_mod_form extends moodleform_mod {
 
     function definition() {
-        global $CFG, $DB;
-
-        // set cert default valid duration
-        //$certvalidvalidlength = 365; 
-        //if ($iomaddetails = $DB->get_record('iomad_courses', array('courseid' => $this->_course->id))) {
-            //var_dump($this->_course->id);
-            //var_dump($iomaddetails);
-        //    $certvalidvalidlength = $iomaddetails->validlength;
-        //}
+        global $CFG;
         
         $mform =& $this->_form;
 
@@ -98,8 +90,6 @@ class mod_iomadcertificate_mod_form extends moodleform_mod {
         $mform->setDefault('enablecertexpire', 1);
         $mform->addHelpButton('enablecertexpire', 'enablecertexpire', 'iomadcertificate');
         
-        //$mform->addElement('text', 'validinterval', get_string('certvalidinterval', 'iomadcertificate'), array('size'=>'3'));
-        //$mform->setType('validinterval', PARAM_INT);
         $validintervaloptions = iomadcertificate_get_validinterval_options();
         $mform->addElement('select', 'validinterval', get_string('validinterval', 'iomadcertificate'), $validintervaloptions);
         $mform->setDefault('validinterval', 365);
@@ -125,7 +115,6 @@ class mod_iomadcertificate_mod_form extends moodleform_mod {
         $mform->disabledIf('expireemailreminde', 'expireemailnotify', 'eq', 0);
         $mform->disabledIf('expireemailreminde', 'enablecertexpire', 'eq', 0);
         
-        //$expireemailoptions = array( 0 => get_string('teacher', 'iomadcertificate'), 1 => get_string('student', 'iomadcertificate'), 2 => get_string('teacherandstudent', 'iomadcertificate'));
         $expireemailrecipientoptions = iomadcertificate_get_expireemailrecipient_options();
         $mform->addElement('select', 'expireemail', get_string('expireemail', 'iomadcertificate'), $expireemailrecipientoptions);
         $mform->setDefault('expireemail', 3);
