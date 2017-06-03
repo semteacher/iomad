@@ -103,7 +103,7 @@ class mod_iomadcertificate_mod_form extends moodleform_mod {
         $validintervaloptions = iomadcertificate_get_validinterval_options();
         $mform->addElement('select', 'validinterval', get_string('validinterval', 'iomadcertificate'), $validintervaloptions);
         $mform->setDefault('validinterval', 365);
-        $mform->addHelpButton('validinterval', 'certvalidinterval', 'iomadcertificate');
+        $mform->addHelpButton('validinterval', 'validinterval', 'iomadcertificate');
         $mform->disabledIf('validinterval', 'enablecertexpire', 'eq', 0);
 
         $mform->addElement('select', 'valid2monthend', get_string('valid2monthend', 'iomadcertificate'), $ynoptions);
