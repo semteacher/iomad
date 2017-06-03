@@ -2534,7 +2534,7 @@ echo "A</br>";
         global $DB, $CFG;
 
         $company = self::get_company_byuserid($user->id);
-        $supervisortemplate = new EmailTemplate('completion_warn_supervisor', array('course' => $course, 'user' => $user, 'company' => $company));
+        $supervisortemplate = new EmailTemplate('completion_warn_manager', array('course' => $course, 'user' => $user, 'company' => $company));
 
         // Do we have a supervisor?
         if ($supervisoremails = self::get_usersupervisor($user->id)) {
@@ -2553,8 +2553,8 @@ echo "A</br>";
                     $supportuser->firstname = $CFG->supportname;
                 }
 
-                $subject = get_string('completion_warn_supervisor_subject', 'block_iomad_company_admin', $params);
-                $messagetext = get_string('completion_warn_supervisor_body', 'block_iomad_company_admin', $params);
+                $subject = get_string('completion_warn_manager_subject', 'block_iomad_company_admin', $params);
+                $messagetext = get_string('completion_warn_manager_body', 'block_iomad_company_admin', $params);
 
                 $mail->Sender = $supportuser->firstname;
                 $mail->FromName = $supportuser->firstname;
