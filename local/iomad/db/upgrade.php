@@ -1483,6 +1483,35 @@ function xmldb_local_iomad_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2017041711, 'local', 'iomad');
     }
 
+    if ($oldversion < 2017041713) {
+
+        // Define field program to be added to companylicense.
+        $table = new xmldb_table('companylicense');
+        $field = new xmldb_field('program', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'type');
+
+        // Conditionally launch add field program.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Iomad savepoint reached.
+        upgrade_plugin_savepoint(true, 2017041713, 'local', 'iomad');
+    }
+
+    if ($oldversion < 2017041714) {
+
+        // Define field groupid to be added to companylicense_users.
+        $table = new xmldb_table('companylicense_users');
+        $field = new xmldb_field('groupid', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, '0', 'issuedate');
+
+        // Conditionally launch add field groupid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Iomad savepoint reached.
+        upgrade_plugin_savepoint(true, 2017041714, 'local', 'iomad');
+    }
 
     return $result;
 }
