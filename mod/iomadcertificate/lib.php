@@ -659,10 +659,11 @@ function iomadcertificate_get_issue($course, $user, $iomadcertificate, $cm) {
     $certissue->userid = $user->id;
     $certissue->code = iomadcertificate_generate_code();
     $certissue->timecreated =  time();
-    
-    // add cert expiration date - flywestwood
+
+    // add cert expiration date - flyesterwood feature
     if ($iomadcertificate->enablecertexpire == 1) {
-        $certissue->timeexpiried = iomadcertificate_get_expiredate_value($iomadcertificate, $certissue->timecreated);
+        //$certissue->timeexpiried = iomadcertificate_get_expiredate_value($iomadcertificate, $certissue->timecreated);
+        $certissue->timeexpiried = iomadcertificate_get_expiredate_no_format($iomadcertificate, $course, $certissue->userid);
     }
     
     $certissue->id = $DB->insert_record('iomadcertificate_issues', $certissue);
@@ -1286,6 +1287,47 @@ function iomadcertificate_get_expiredate($iomadcertificate, $certrecord, $course
     }
 
     return '';
+}
+
+/**
+ * Returns the certificate expiration date to display for the iomadcertificate - without formatting!.
+ *
+ * @param stdClass $iomadcertificate
+ * @param stdClass $course
+ * @param int $userid
+ * @return string the date
+ */
+function iomadcertificate_get_expiredate_no_format($iomadcertificate, $course, $userid = null) {
+    global $DB, $USER;
+
+    if (empty($userid)) {
+        $userid = $USER->id;
+    }
+
+    // Set iomadcertificate expired date to current time, can be overwritten later
+    $date = iomadcertificate_get_expiredate_value($iomadcertificate, time());
+    
+    if ($iomadcertificate->printdate == '2') {
+        // Get the enrolment end date
+        $sql = "SELECT MAX(c.timecompleted) as timecompleted
+                FROM {course_completions} c
+                WHERE c.userid = :userid
+                AND c.course = :courseid";
+        // Do we have a date on the tracking tables.
+        $certname = rtrim($iomadcertificate->name, '.');
+        $filename = clean_filename("$certname.pdf");
+        if ($timecompleted = $DB->get_record_sql($sql, array('userid' => $userid, 'courseid' => $course->id))) {
+            if (!empty($timecompleted->timecompleted)) {
+                $date = iomadcertificate_get_expiredate_value($iomadcertificate, $timecompleted->timecompleted);
+            }
+        }
+    } else if ($iomadcertificate->printdate > 2) {
+        if ($modinfo = iomadcertificate_get_mod_grade($course, $iomadcertificate->printdate, $userid)) {
+            $date = iomadcertificate_get_expiredate_value($iomadcertificate, $modinfo->dategraded);
+        }
+    }
+    
+    return $date;
 }
 
 /**
