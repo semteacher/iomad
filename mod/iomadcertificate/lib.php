@@ -1261,13 +1261,11 @@ function iomadcertificate_get_expiredate($iomadcertificate, $certrecord, $course
         if (empty($certrecord->trackid) && $timecompleted = $DB->get_record_sql($sql, array('userid' => $userid, 'courseid' => $course->id))) {
             if (!empty($timecompleted->timecompleted)) {
                 $date = iomadcertificate_get_expiredate_value($iomadcertificate, $timecompleted->timecompleted);
-                //$date = $timecompleted->timecompleted;
             }
         }
     } else if ($iomadcertificate->printdate > 2) {
         if ($modinfo = iomadcertificate_get_mod_grade($course, $iomadcertificate->printdate, $userid)) {
             $date = iomadcertificate_get_expiredate_value($iomadcertificate, $modinfo->dategraded);
-            //$date = $modinfo->dategraded;
         }
     }
     if ($iomadcertificate->printdate > 0) {
@@ -1298,7 +1296,8 @@ function iomadcertificate_get_expiredate($iomadcertificate, $certrecord, $course
  * @return int the date
  */
 function iomadcertificate_get_expiredate_value($iomadcertificate, $issuedate) {
-    $expiredate = strtotime($issuedate) + strtotime(strval($iomadcertificate->validinterval) . ' days');
+    //$expiredate = strtotime($issuedate) + strtotime(strval($iomadcertificate->validinterval) . ' days');
+    $expiredate = strtotime('+'.strval($iomadcertificate->validinterval) . ' days', $issuedate);   
     if ($iomadcertificate->valid2monthend){
         $expiredate = strtotime(date('Y-m-t',$expiredate));
     }    
