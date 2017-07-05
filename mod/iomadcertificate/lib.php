@@ -206,11 +206,14 @@ function iomadcertificate_user_outline($course, $user, $mod, $iomadcertificate) 
 function iomadcertificate_user_complete($course, $user, $mod, $iomadcertificate) {
    global $DB, $OUTPUT;
 
+//get context by context module - still error on "user completion (in course)" report!
+$cm = get_coursemodule_from_instance('iomadcertificate', $iomadcertificate->id, $course->id);
+$contextmodule = context_module::instance($cm->id);
    if ($issue = $DB->get_record('iomadcertificate_issues', array('iomadcertificateid' => $iomadcertificate->id, 'userid' => $user->id))) {
         echo $OUTPUT->box_start();
         echo get_string('issued', 'iomadcertificate') . ": ";
         echo userdate($issue->timecreated);
-        iomadcertificate_print_user_files($iomadcertificate->id, $user->id);
+        iomadcertificate_print_user_files($iomadcertificate, $user->id, $contextmodule);
         echo '<br />';
         echo $OUTPUT->box_end();
     } else {
