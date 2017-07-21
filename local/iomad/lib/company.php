@@ -1749,7 +1749,7 @@ class company {
             $companygroup->id = self::create_company_course_group($companyid, $courseid);
         }
         // Get the group information.
-        $groupinfo = $DB->get_record('groups', array('id' => $companygroup->id));
+        $groupinfo = $DB->get_record('groups', array('id' => $companygroup->groupid));
         return $groupinfo;
     }
 
@@ -1855,7 +1855,7 @@ class company {
                 if ($groupusers = $DB->get_records('groups_members', array('groupid' => $groupid))) {
                     foreach($groupusers as $user) {
                         groups_add_member($group->id, $user->userid);
-                        group_remove_member($groupid, $user->userid);
+                        groups_remove_member($groupid, $user->userid);
                     }
                 }
                 $DB->delete_records('groups', array('id' => $groupid));
@@ -2440,13 +2440,10 @@ class company {
             foreach ($licenserecords as $licenserecord) {
                 // Delete the record.
                 $DB->delete_records('companylicense_users', array('id' => $licenserecord->id));
+
                 // Update the license used count.
-                $DB->execute("UPDATE {companylicense},
-                                  (
-                                   SELECT licenseid,count(*) AS licCount FROM {companylicense_users} GROUP BY licenseid
-                                  ) AS t2
-                                  SET {companylicense}.used = t2.licCount
-                                  WHERE mdl_companylicense.id = t2.licenseid;");
+                $licensecount = count($DB->get_records('companylicense_users', array('licenseid' => $licenserecord->licenseid)));
+                $DB->set_field('companylicense', 'used', $licensecount, array('id' => $licenserecord->licenseid));
             }
         }
         return true;
