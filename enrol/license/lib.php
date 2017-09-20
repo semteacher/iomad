@@ -221,14 +221,20 @@ class enrol_license_plugin extends enrol_plugin {
         $form = new enrol_license_enrol_form(null, $instance);
         $instanceid = optional_param('instance', 0, PARAM_INT);
 
-        if ($instance->id == $instanceid) {
-            if ($data = $form->get_data()) {
+        if ($instance->id == $instanceid || $license->type == 1) {
+            if ($data = $form->get_data() || $license->type == 1) {
                 $enrol = enrol_get_plugin('license');
 
                 // Enrol the user in the course.
                 $timestart = time();
-                // Set the timeend to be time start + the valid length for the license in days.
-                $timeend = $timestart + ($license->validlength * 24 * 60 * 60 );
+
+                if (empty($license->type)) {
+                    // Set the timeend to be time start + the valid length for the license in days.
+                    $timeend = $timestart + ($license->validlength * 24 * 60 * 60 );
+                } else {
+                    // Set the timeend to be when the license runs out.
+                    $timeend = $license->expirydate;
+                }
 
                 $this->enrol_user($instance, $USER->id, $instance->roleid, $timestart, $timeend);
 
@@ -382,7 +388,7 @@ class enrol_license_plugin extends enrol_plugin {
         // Deal with users who are past enrolment time/ completed the course.
         $runtime = time();
         if ($userids = $DB->get_records_sql("SELECT ue.id, ue.userid, ue.enrolid, e.courseid
-                                             FROM mdl_user_enrolments ue, mdl_enrol e
+                                             FROM {user_enrolments} ue, {enrol} e
                                              WHERE e.enrol='license'
                                              AND e.id = ue.enrolid
                                              AND ue.timeend < :time",

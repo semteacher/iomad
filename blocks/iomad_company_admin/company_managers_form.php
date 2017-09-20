@@ -139,6 +139,13 @@ class company_managers_form extends moodleform {
         $company = new company($this->selectedcompany);
         $managertypes = $company->get_managertypes();
 
+        // Get the full company tree as we may need it.
+        $topcompanyid = $company->get_topcompanyid();
+        $topcompany = new company($topcompanyid);
+        $companytree = $topcompany->get_child_companies_recursive();
+        $parentcompanies = $company->get_parent_companies_recursive();
+        $companytree[$topcompanyid] = $topcompanyid;
+
         // Process incoming assignments.
         if (optional_param('add', false, PARAM_BOOL) && confirm_sesskey()) {
             $userstoassign = $this->potentialusers->get_selected_users();
@@ -342,7 +349,8 @@ class company_managers_form extends moodleform {
                         // Is this a manager from another company?
                         if ($DB->get_records_sql("SELECT id FROM {company_users}
                                                   WHERE userid = :userid
-                                                  AND companyid != :companyid
+                                                  AND companyid NOT IN 
+                                                  (" . join(',', array_keys($companytree)) .")
                                                   AND managertype = 1",
                                                   array('userid' => $removeuser->id,
                                                         'companyid' => $this->selectedcompany))) {
@@ -359,7 +367,7 @@ class company_managers_form extends moodleform {
                         if ($companycourses = $DB->get_records('company_course', array('companyid' => $this->selectedcompany))) {
                             foreach ($companycourses as $companycourse) {
                                 if ($DB->record_exists('course', array('id' => $companycourse->courseid))) {
-                                    company_user::unenrol($removeuser, array($companycourse->courseid), $companycourse->companyid);
+                                    company_user::unenrol($removeuser, array($companycourse->courseid), $companycourse->companyid, false);
                                 }
                             }
                         }
@@ -471,7 +479,8 @@ if (empty($departmentid)) {
     $departmentid = $userhierarchylevel;
 }
 
-$departmenttree = company::get_all_departments_raw($company->id);
+$userdepartment = $company->get_userlevel($USER);
+$departmenttree = company::get_all_subdepartments_raw($userdepartment->id);
 $treehtml = $output->department_tree($departmenttree, optional_param('deptid', 0, PARAM_INT));
 
 $departmentselect = new single_select(new moodle_url($linkurl, $urlparams), 'deptid', $subhierarchieslist, $departmentid);
@@ -479,6 +488,14 @@ $departmentselect->label = get_string('department', 'block_iomad_company_admin')
                            $OUTPUT->help_icon('department', 'block_iomad_company_admin') . '&nbsp';
 
 $managertypes = $company->get_managertypes();
+if ($departmentid != $parentlevel->id) {
+    unset($managertypes[1]);
+    if ($roleid ==1) {
+        $urlparams['managertype'] = '';
+        $urlparams['deptid'] = $departmentid;
+        redirect(new moodle_url($linkurl, $urlparams));
+    }
+}
 $managerselect = new single_select(new moodle_url($linkurl, $urlparams), 'managertype', $managertypes, $roleid);
 $managerselect->label = get_string('managertype', 'block_iomad_company_admin') .
                         $OUTPUT->help_icon('managertype', 'block_iomad_company_admin') . '&nbsp';
