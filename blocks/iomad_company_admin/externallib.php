@@ -94,6 +94,10 @@ class block_iomad_company_admin_external extends external_api {
 
             // Create the company record
             $companyid = $DB->insert_record('company', $company);
+
+            // Set up default department.
+            company::initialise_departments($companyid);
+
             $newcompany = $DB->get_record('company', array('id' => $companyid));
             $companyinfo[] = (array)$newcompany;
 
@@ -434,7 +438,7 @@ class block_iomad_company_admin_external extends external_api {
         global $CFG, $DB;
 
         // Validate parameters
-        $params = self::validate_parameters(self::assign_users_parameters(), $users);
+        $params = self::validate_parameters(self::assign_users_parameters(), array('users' => $users));
 
         // Get/check context/capability
         $context = context_system::instance();
@@ -444,15 +448,15 @@ class block_iomad_company_admin_external extends external_api {
         $succeeded = true;
 
         // Deal with the list of users.
-        foreach ($users as $userrecord) {
-            if (empty($userrecord->userid) || empty($userrecord->companyid)) {
+        foreach ($params['users'] as $userrecord) {
+            if (empty($userrecord['userid']) || empty($userrecord['companyid'])) {
                 $succeeded = false;
                 continue;
             }
-            $company = new company($userrecord->companyid);
-            if (!$company->assign_user_to_company($userrecord->userid,
-                                                  $userrecord->departmentid,
-                                                  $userrecord->managertype,
+            $company = new company($userrecord['companyid']);
+            if (!$company->assign_user_to_company($userrecord['userid'],
+                                                  $userrecord['departmentid'],
+                                                  $userrecord['managertype'],
                                                   true)) {
                 $succeeded = false;
             }
@@ -461,8 +465,8 @@ class block_iomad_company_admin_external extends external_api {
             $managertypes = $company->get_managertypes();
             $eventother = array('companyname' => $company->get_name(),
                                 'companyid' => $company->id,
-                                'usertype' => $userrecord->managertype,
-                                'usertypename' => $managertypes[$userrecord->managertype]);
+                                'usertype' => $userrecord['managertype'],
+                                'usertypename' => $managertypes[$userrecord['managertype']]);
             $event = \block_iomad_company_admin\event\company_user_assigned::create(array('context' => context_system::instance(),
                                                                                             'objectid' => $company->id,
                                                                                             'userid' => $adduser->id,
@@ -516,7 +520,7 @@ class block_iomad_company_admin_external extends external_api {
         global $CFG, $DB;
 
         // Validate parameters
-        $params = self::validate_parameters(self::assign_users_parameters(), $users);
+        $params = self::validate_parameters(self::assign_users_parameters(), array('users' => $users));
 
         // Get/check context/capability
         $context = context_system::instance();
@@ -526,15 +530,15 @@ class block_iomad_company_admin_external extends external_api {
         $succeeded = true;
 
         // Deal with the list of users.
-        foreach ($users as $userrecord) {
-            if (empty($userrecord->userid) || empty($userrecord->companyid)) {
+        foreach ($params['users'] as $userrecord) {
+            if (empty($userrecord['userid']) || empty($userrecord['companyid'])) {
                 $succeeded = false;
                 continue;
             }
-            $company = new company($userrecord->companyid);
-            if (!$company->assign_user_to_department($userrecord->departmentid,
-                                                     $userrecord->userid,
-                                                     $userrecord->managertype,
+            $company = new company($userrecord['companyid']);
+            if (!$company->assign_user_to_department($userrecord['departmentid'],
+                                                     $userrecord['userid'],
+                                                     $userrecord['managertype'],
                                                      true)) {
                 $succeeded = false;
             }
@@ -543,8 +547,8 @@ class block_iomad_company_admin_external extends external_api {
             $managertypes = $company->get_managertypes();
             $eventother = array('companyname' => $company->get_name(),
                                 'companyid' => $company->id,
-                                'usertype' => $userrecord->managertype,
-                                'usertypename' => $managertypes[$userrecord->managertype]);
+                                'usertype' => $userrecord['managertype'],
+                                'usertypename' => $managertypes[$userrecord['managertype']]);
             $event = \block_iomad_company_admin\event\company_user_assigned::create(array('context' => context_system::instance(),
                                                                                             'objectid' => $company->id,
                                                                                             'userid' => $adduser->id,
@@ -597,7 +601,7 @@ class block_iomad_company_admin_external extends external_api {
         global $CFG, $DB;
 
         // Validate parameters
-        $params = self::validate_parameters(self::assign_users_parameters(), $users);
+        $params = self::validate_parameters(self::assign_users_parameters(), array('users' => $users));
 
         // Get/check context/capability
         $context = context_system::instance();
@@ -607,13 +611,13 @@ class block_iomad_company_admin_external extends external_api {
         $succeeded = true;
 
         // Deal with the list of users.
-        foreach ($users as $userrecord) {
-            if (empty($userrecord->userid) || empty($userrecord->companyid)) {
+        foreach ($params['users'] as $userrecord) {
+            if (empty($userrecord['userid']) || empty($userrecord['companyid'])) {
                 $succeeded = false;
                 continue;
             }
-            $company = new company($userrecord->companyid);
-            if (!$company->unassign_user_from_company($userrecord->userid, true)) {
+            $company = new company($userrecord['companyid']);
+            if (!$company->unassign_user_from_company($userrecord['userid'], true)) {
                 $succeeded = false;
             }
 
@@ -621,7 +625,7 @@ class block_iomad_company_admin_external extends external_api {
             $managertypes = $company->get_managertypes();
             $eventother = array('companyname' => $company->get_name(),
                                 'companyid' => $company->id,
-                                'usertype' => $userrecord->usertype,
+                                'usertype' => $userrecord['usertype'],
                                 'usertypename' => $managertypes[$roletype]);
             $event = \block_iomad_company_admin\event\company_user_unassigned::create(array('context' => context_system::instance(),
                                                                                             'objectid' => $company->id,
@@ -681,7 +685,7 @@ class block_iomad_company_admin_external extends external_api {
         global $CFG, $DB;
 
         // Validate parameters
-        $params = self::validate_parameters(self::assign_courses_parameters(), $courses);
+        $params = self::validate_parameters(self::assign_courses_parameters(), array('courses' => $courses));
 
         // Get/check context/capability
         $context = context_system::instance();
@@ -691,16 +695,16 @@ class block_iomad_company_admin_external extends external_api {
         $succeeded = true;
 
         // Deal with the list of users.
-        foreach ($courses as $courserecord) {
-            if (empty($courserecord->courseid) || empty($courserecord->companyid)) {
+        foreach ($params['courses'] as $courserecord) {
+            if (empty($courserecord['courseid']) || empty($courserecord['companyid'])) {
                 $succeeded = false;
                 continue;
             }
-            if (!$course = $DB->get_record('course', array('id' => $courserecord->courseid))) {
+            if (!$course = $DB->get_record('course', array('id' => $courserecord['courseid']))) {
                 $succeeded = false;
             } else {
-                $company = new company($courserecord->companyid);
-                $company->add_course($course, $courserecord->departmentid, $courserecord->owned, $courserecord->licensed);
+                $company = new company($courserecord['companyid']);
+                $company->add_course($course, $courserecord['departmentid'], $courserecord['owned'], $courserecord['licensed']);
             }
         }
 
@@ -749,7 +753,7 @@ class block_iomad_company_admin_external extends external_api {
         global $CFG, $DB;
 
         // Validate parameters
-        $params = self::validate_parameters(self::unassign_courses_parameters(), $courses);
+        $params = self::validate_parameters(self::unassign_courses_parameters(), array('courses' => $courses));
 
         // Get/check context/capability
         $context = context_system::instance();
@@ -759,15 +763,15 @@ class block_iomad_company_admin_external extends external_api {
         $succeeded = true;
 
         // Deal with the list of users.
-        foreach ($courses as $courserecord) {
-            if (empty($courserecord->courseid) || empty($courserecord->companyid)) {
+        foreach ($params['courses'] as $courserecord) {
+            if (empty($courserecord['courseid']) || empty($courserecord['companyid'])) {
                 $succeeded = false;
                 continue;
             }
-            if (!$course = $DB->get_record('course', array('id' => $courserecord->courseid))) {
+            if (!$course = $DB->get_record('course', array('id' => $courserecord['courseid']))) {
                 $succeeded = false;
             } else {
-                company::remove_course($course, $courserecord->companyid);
+                company::remove_course($course, $courserecord['companyid']);
             }
             
         }
@@ -822,7 +826,7 @@ class block_iomad_company_admin_external extends external_api {
         global $CFG, $DB;
 
         // Validate parameters
-        $params = self::validate_parameters(self::update_courses_parameters(), $courses);
+        $params = self::validate_parameters(self::update_courses_parameters(), array('courses' => $courses));
 
         // Get/check context/capability
         $context = context_system::instance();
@@ -832,16 +836,16 @@ class block_iomad_company_admin_external extends external_api {
         $succeeded = true;
 
         // Deal with the list of users.
-        foreach ($courses as $courserecord) {
-            if (empty($courserecord->courseid)) {
+        foreach ($params['courses'] as $courserecord) {
+            if (empty($courserecord['courseid'])) {
                 $succeeded = false;
                 continue;
             }
-            if (!$currentrecord = $DB->get_record('iomad_courses', array('courseid' => $courserecord->courseid))) {
+            if (!$currentrecord = $DB->get_record('iomad_courses', array('courseid' => $courserecord['courseid']))) {
                 $succeeded = false;
             } else {
                 // Replace the record with the new one.
-                $courserecord->id = $currentrecord->id;
+                $courserecord['id'] = $currentrecord->id;
                 if (!$DB->update_record('iomad_courses', $courserecord)) {
                     $succeeded = false;
                 }
@@ -1030,6 +1034,13 @@ class block_iomad_company_admin_external extends external_api {
                              'used' => new external_value(PARAM_INT, 'Number allocated'),
                              'companyid' => new external_value(PARAM_INT, 'Company id'),
                              'parentid' => new external_value(PARAM_INT, 'Parent license id'),
+                             'courses' => new external_multiple_structure(
+                                 new external_single_structure(
+                                        array(
+                                            'courseid'  => new external_value(PARAM_INT, 'Course ID'),
+                                        )
+                                 )
+                            ),
                         )
                     )
                 )
@@ -1048,7 +1059,11 @@ class block_iomad_company_admin_external extends external_api {
         global $CFG, $DB, $USER;
 
         // Validate parameters
-        $params = self::validate_parameters(self::create_licenses_parameters(), $licenses);
+        // actXc:  can this be? throws invalid structure error,  may be 
+        // org: 
+      //$params = self::validate_parameters(self::create_licenses_parameters(), $licenses);
+        $params = self::validate_parameters(self::create_licenses_parameters(), array('licenses' => $licenses));
+        
 
         // Get/check context/capability
         $context = context_system::instance();
@@ -1056,14 +1071,20 @@ class block_iomad_company_admin_external extends external_api {
         require_capability('block/iomad_company_admin:edit_licenses', $context);
 
         // Array to return newly created records
-        $companyinfo = array();
+        $licenseinfo = array();
 
         foreach ($params['licenses'] as $license) {
             // Create the License record
             $licenseid = $DB->insert_record('companylicense', $license);
-            $newlicense = $DB->get_record('companylicense', array('id' => $licenseid));
+
+            // Deal with the courses.
+            foreach ($license->courses as $course) {
+                $DB->insert_record('companylicense_courses', array('licenseid' => $licenseid,
+                                                                   'courseid' => $course->courseid));
+            }
 
             // Create an event to deal with an parent license allocations.
+            $newlicense = $DB->get_record('companylicense', array('id' => $licenseid));
             $eventother = array('licenseid' => $licenseid,
                                 'parentid' => $newlicense->parentid);
 
@@ -1073,6 +1094,7 @@ class block_iomad_company_admin_external extends external_api {
                                                                                             'other' => $eventother));
 
             $event->trigger();
+            $newlicense->courses = $license->courses;
             $licenseinfo[] = (array)$newlicense;
         }
 
@@ -1097,6 +1119,13 @@ class block_iomad_company_admin_external extends external_api {
                      'used' => new external_value(PARAM_INT, 'Number allocated'),
                      'companyid' => new external_value(PARAM_INT, 'Company id'),
                      'parentid' => new external_value(PARAM_INT, 'Parent license id'),
+                     'courses' => new external_multiple_structure(
+                         new external_single_structure(
+                                array(
+                                    'courseid'  => new external_value(PARAM_INT, 'Course ID'),
+                                )
+                         )
+                    ),
                 )
             )
         );
@@ -1311,22 +1340,31 @@ class block_iomad_company_admin_external extends external_api {
 
             // Does this license exist?
             if (!$oldlicense = $DB->get_record('companylicense', array('id' => $licenseid))) {
-                throw new invalid_parameter_exception("License id=$id does not exist");
+                throw new invalid_parameter_exception("License id=$licenseid does not exist");
             }
 
             // What about the company?
             if (!$companyrec = $DB->get_record('company', array('id' => $oldlicense->companyid))) {
-                throw new invalid_parameter_exception("Company does not exist for license id=$licenseid");
+                throw new invalid_parameter_exception("Company does not match for license id=$licenseid");
             }
 
             // The user?
-            if (!$user = $DB->get_record('user', array('id' => $oldlicense->userid))) {
-                throw new invalid_parameter_exception("User id=" . $user->id ." does not exist");
+            if (!$user = $DB->get_record('user', array('id' => $license['userid'], 'deleted' => 0))) {
+                throw new invalid_parameter_exception("User id=" . $license['userid'] ." does not exist");
+            }
+            if ($user->suspended == 1) {
+                throw new invalid_parameter_exception("User id=" . $license['userid'] ." is suspended");
             }
 
             // The course?
-            if (!$course = $DB->get_record('course', array('id' => $params['licensecourseid']))) {
-                throw new invalid_parameter_exception("Course id=" . $params['licensecourseid'] ." does not exist");
+            if (!$course = $DB->get_record('course', array('id' => $license['licensecourseid']))) {
+                throw new invalid_parameter_exception("Course id=" . $license['licensecourseid'] ." does not exist");
+            }
+
+            // Does the license include this course?
+            if (!$DB->get_record('companylicense_courses', array('courseid' => $license['licensecourseid'],
+                                                                 'licenseid' => $licenseid))) {
+                throw new invalid_parameter_exception("Course id=" . $license['licensecourseid'] ." is not inculded in license id $licenseid");
             }
 
             // Has the license expired?
@@ -1340,14 +1378,14 @@ class block_iomad_company_admin_external extends external_api {
             }
 
             // Are we double allocating?
-            $params['isusing'] = 0;
-            if ($DB->get_record('companylicense_users', $params)) {
+            $license['isusing'] = 0;
+            if ($DB->get_record('companylicense_users', $license)) {
                 throw new invalid_parameter_exception("User id=" . $user->id ." already has an unused license for that course.");
             }
 
             // Set up the rest of the record.
-            $params['issuedate'] = $timestamp;
-            $DB->insert_record('companylicense_users', $params);
+            $license['issuedate'] = $timestamp;
+            $DB->insert_record('companylicense_users', $license);
 
             // Create an event.
             $eventother = array('licenseid' => $licenseid,
@@ -1422,33 +1460,51 @@ class block_iomad_company_admin_external extends external_api {
 
             // Does this license exist?
             if (!$oldlicense = $DB->get_record('companylicense', array('id' => $licenseid))) {
-                throw new invalid_parameter_exception("License id=$id does not exist");
+                throw new invalid_parameter_exception("License id=$licenseid does not exist");
             }
 
             // What about the company?
             if (!$companyrec = $DB->get_record('company', array('id' => $oldlicense->companyid))) {
-                throw new invalid_parameter_exception("Company does not exist for license id=$licenseid");
+                throw new invalid_parameter_exception("Company does not match for license id=$licenseid");
             }
 
             // The user?
-            if (!$user = $DB->get_record('user', array('id' => $oldlicense->userid))) {
-                throw new invalid_parameter_exception("User id=" . $user->id ." does not exist");
+            if (!$user = $DB->get_record('user', array('id' => $license['userid'], 'deleted' => 0))) {
+                throw new invalid_parameter_exception("User id=" . $license['userid'] ." does not exist");
+            }
+            if ($user->suspended == 1) {
+                throw new invalid_parameter_exception("User id=" . $license['userid'] ." is suspended");
             }
 
             // The course?
-            if (!$course = $DB->get_record('course', array('id' => $params['licensecourseid']))) {
-                throw new invalid_parameter_exception("Course id=" . $params['licensecourseid'] ." does not exist");
+            if (!$course = $DB->get_record('course', array('id' => $license['licensecourseid']))) {
+                throw new invalid_parameter_exception("Course id=" . $license['licensecourseid'] ." does not exist");
             }
 
-            // Has this been allocated and we can?
-            $params['isusing'] = 0;
-            if (!$allocationrec = $DB->get_record('companylicense_users', $params)) {
-                throw new invalid_parameter_exception("User id=" . $user->id ." already has an unused license for that course.");
+            // Does the license include this course?
+            if (!$DB->get_record('companylicense_courses', array('courseid' => $license['licensecourseid'],
+                                                                 'licenseid' => $licenseid))) {
+                throw new invalid_parameter_exception("Course id=" . $license['licensecourseid'] ." is not inculded in license id $licenseid");
+            }
+
+            // Has the license expired?
+            if ($oldlicense->expirydate < $timenow) {
+                throw new invalid_parameter_exception("License id=$licenseid has expired");
+            }
+
+            // Is there any space left?
+            if ($oldlicense->allocation <= $oldlicense->used) {
+                throw new invalid_parameter_exception("License id=$licenseid has no free slots");
+            }
+
+            // Can we remove this?
+            $license['isusing'] = 0;
+            if (!$allocationrec = $DB->get_record('companylicense_users', $license)) {
+                throw new invalid_parameter_exception("User id=" . $user->id ." has used the license for that course.");
             }
 
             // Set up the rest of the record.
-            $params['issuedate'] = $timestamp;
-            $DB->insert_record('companylicense_users', $params);
+            $DB->delete_record('companylicense_users', array('id' => $allocationrec->id));
 
             // Create an event.
             $eventother = array('licenseid' => $licenseid);

@@ -27,6 +27,16 @@ class report_completion {
     public static function get_course_summary_info($departmentid, $courseid=0, $showsuspended) {
         global $DB;
 
+        // Get the company details.
+        $departmentrec = $DB->get_record('department', array('id' => $departmentid));
+        $company = new company($departmentrec->company);
+
+        // Get the full company tree as we may need it.
+        $topcompanyid = $company->get_topcompanyid();
+        $topcompany = new company($topcompanyid);
+        $companytree = $topcompany->get_child_companies_recursive();
+        $parentcompanies = $company->get_parent_companies_recursive();
+
         // Create a temporary table to hold the userids.
         $temptablename = 'tmp_'.uniqid();
         $dbman = $DB->get_manager();
@@ -39,6 +49,15 @@ class report_completion {
 
         $dbman->create_temp_table($table);
 
+        // Deal with parent company managers
+        if (!empty($parentcompanies)) {
+            $userfilter = " AND userid NOT IN (
+                             SELECT userid FROM {company_users}
+                             WHERE companyid IN (" . implode(',', array_keys($parentcompanies)) . "))";
+        } else {
+            $userfilter = "";
+        }
+
         // Populate it.
         $alldepartments = company::get_all_subdepartments($departmentid);
         if (count($alldepartments) > 0 ) {
@@ -49,7 +68,7 @@ class report_completion {
                 $suspendedsql = "";
             }
             $tempcreatesql = "INSERT INTO {".$temptablename."} (userid) SELECT userid from {company_users}
-                              WHERE departmentid IN (".implode(',', array_keys($alldepartments)).") $suspendedsql";
+                              WHERE departmentid IN (".implode(',', array_keys($alldepartments)).") $userfilter $suspendedsql";
         } else {
             $tempcreatesql = "";
         }
@@ -64,32 +83,57 @@ class report_completion {
             $courses = company::get_recursive_department_courses($departmentid);
         }
 
+        // We only want the student role.
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+
         // Process them!
         $returnarr = array();
         foreach ($courses as $course) {
+            $contextcourse = context_course::instance($course->courseid);
             $courseobj = new stdclass();
             $courseobj->id = $course->courseid;
 
             $courseobj->numenrolled = $DB->count_records_sql("SELECT COUNT(ue.id) FROM {user_enrolments} ue
                                                    JOIN {enrol} e ON (e.id = ue.enrolid AND e.status = 0)
+                                                   JOIN {role_assignments} ra ON (ue.userid = ra.userid)
                                                    JOIN {".$temptablename."} tt ON (ue.userid = tt.userid)
-                                                   WHERE
-                                                   e.courseid = :course", array('course' => $course->courseid));
+                                                   WHERE e.courseid = :course
+                                                   AND ra.roleid = :student
+                                                   AND ra.contextid = :coursecontext",
+                                                   array('course' => $course->courseid,
+                                                         'student' => $studentrole->id,
+                                                         'coursecontext' => $contextcourse->id));
             $courseobj->numnotstarted = $DB->count_records_sql("SELECT COUNT(cc.id) FROM {course_completions} cc
+                                                   JOIN {role_assignments} ra ON (cc.userid = ra.userid)
                                                    JOIN {".$temptablename."} tt ON (cc.userid = tt.userid)
-                                                   WHERE
-                                                   cc.course = :course AND
-                                                   cc.timestarted = 0", array('course' => $course->courseid));
+                                                   WHERE cc.course = :course
+                                                   AND ra.roleid = :student
+                                                   AND ra.contextid = :coursecontext
+                                                   AND cc.timestarted = 0",
+                                                   array('course' => $course->courseid,
+                                                         'student' => $studentrole->id,
+                                                         'coursecontext' => $contextcourse->id));
             $courseobj->numstarted = $DB->count_records_sql("SELECT COUNT(cc.id) FROM {course_completions} cc
+                                                   JOIN {role_assignments} ra ON (cc.userid = ra.userid)
                                                    JOIN {".$temptablename."} tt ON (cc.userid = tt.userid)
                                                    WHERE
-                                                   cc.course = :course AND
-                                                   cc.timestarted != 0", array('course' => $course->courseid));
+                                                   cc.course = :course
+                                                   AND ra.roleid = :student
+                                                   AND ra.contextid = :coursecontext
+                                                   AND cc.timestarted != 0",
+                                                   array('course' => $course->courseid,
+                                                         'student' => $studentrole->id,
+                                                         'coursecontext' => $contextcourse->id));
             $courseobj->numcompleted = $DB->count_records_sql("SELECT COUNT(cc.id) FROM {course_completions} cc
+                                                   JOIN {role_assignments} ra ON (cc.userid = ra.userid)
                                                    JOIN {".$temptablename."} tt ON (cc.userid = tt.userid)
-                                                   WHERE
-                                                   cc.course = :course AND
-                                                   cc.timecompleted IS NOT NULL", array('course' => $course->courseid));
+                                                   WHERE cc.course = :course
+                                                   AND ra.roleid = :student
+                                                   AND ra.contextid = :coursecontext
+                                                   AND cc.timecompleted IS NOT NULL",
+                                                   array('course' => $course->courseid,
+                                                         'student' => $studentrole->id,
+                                                         'coursecontext' => $contextcourse->id));
             $courseobj->historic = $DB->count_records_sql("SELECT COUNT(lct.id) FROM {local_iomad_track} lct
                                                    JOIN {".$temptablename."} tt ON (lct.userid = tt.userid)
                                                    WHERE
@@ -157,6 +201,9 @@ class report_completion {
 
         $dbman->create_temp_table($table);
 
+        // We only want the student role.
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+
         // Populate it.
         $tempcreatesql = "INSERT INTO {".$tempcomptablename."} (userid, courseid, timeenrolled, timestarted, timecompleted, finalscore, certsource)
                           SELECT ue.userid, e.courseid, ue.timestart, cc.timestarted, cc.timecompleted, gg.finalgrade, 0
@@ -164,15 +211,16 @@ class report_completion {
                           JOIN {user_enrolments} ue ON (tut.userid = ue.userid)
                           INNER JOIN {enrol} e ON (ue.enrolid = e.id AND e.status=0)
                           JOIN {course_completions} cc ON (ue.userid = cc.userid AND e.courseid = cc.course)
+                          JOIN {role_assignments} ra ON (ue.userid = ra.userid)
+                          JOIN {context} c ON (ra.contextid = c.id AND c.contextlevel = 50 AND c.instanceid = e.courseid)
                           LEFT JOIN {grade_items} gi
                           ON (cc.course = gi.courseid
                           AND gi.itemtype = 'course')
-                          LEFT JOIN {grade_grades} gg ON (gg.userid = cc.userid AND gi.id = gg.itemid)";
-                          
-                          //WHERE tut.userid = cc.userid";
+                          LEFT JOIN {grade_grades} gg ON (gg.userid = cc.userid AND gi.id = gg.itemid)
+                          WHERE ra.roleid = " . $studentrole->id;
+
         if (!empty($courseid)) {
-            //$tempcreatesql .= " AND cc.course = ".$courseid;
-            $tempcreatesql .= " WHERE cc.course = ".$courseid;
+            $tempcreatesql .= " AND cc.course = ".$courseid;
         }
         $DB->execute($tempcreatesql);
 
@@ -217,6 +265,15 @@ class report_completion {
     public static function get_user_course_completion_data($searchinfo, $courseid, $page=0, $perpage=0, $completiontype=0, $showhistoric=false) {
         global $DB;
 
+        $companyid = iomad::get_my_companyid(context_system::instance());
+        $company = new company($companyid);
+
+        // Get the full company tree as we may need it.
+        $topcompanyid = $company->get_topcompanyid();
+        $topcompany = new company($topcompanyid);
+        $companytree = $topcompany->get_child_companies_recursive();
+        $parentcompanies = $company->get_parent_companies_recursive();
+
         $completiondata = new stdclass();
 
         $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
@@ -238,6 +295,16 @@ class report_completion {
             }
         } else {
             $completionsql = "";
+        }
+
+
+        // Deal with parent company managers
+        if (!empty($parentcompanies)) {
+            $userfilter = " AND u.id NOT IN (
+                             SELECT userid FROM {company_users}
+                             WHERE companyid IN (" . implode(',', array_keys($parentcompanies)) . "))";
+        } else {
+            $userfilter = "";
         }
 
         // Populate the temporary completion table.
@@ -262,7 +329,12 @@ class report_completion {
                       cc.certsource as certsource,
                       d.name as department,
                       cc.finalscore as result ";
-        $fromsql = " FROM {user} u, {".$tempcomptablename."} cc, {department} d, {company_users} du, {user_enrolments} ue, {enrol} e
+        $fromsql = " FROM {user} u
+                     JOIN {".$tempcomptablename."} cc ON (u.id = cc.userid)
+                     JOIN {company_users} du ON (u.id = du.userid)
+                     JOIN {department} d ON (du.departmentid = d.id)
+                     JOIN {user_enrolments} ue ON (u.id = ue.userid)
+                     JOIN {enrol} e ON (ue.enrolid = e.id and cc.courseid = e.courseid)
                     WHERE $searchinfo->sqlsearch
                     AND cc.userid = u.id
                     AND u.id = cc.userid
@@ -270,7 +342,8 @@ class report_completion {
                     AND ue.userid = cc.userid
                     AND du.userid = u.id
                     AND d.id = du.departmentid
-                    $completionsql ";
+                    AND cc.courseid = $courseid
+                    $completionsql $userfilter";
 
         $searchinfo->searchparams['courseid'] = $courseid;
         $users = $DB->get_records_sql($selectsql.$fromsql.$searchinfo->sqlsort, $searchinfo->searchparams, $page * $perpage, $perpage);
@@ -299,6 +372,15 @@ class report_completion {
     public static function get_all_user_course_completion_data($searchinfo, $page=0, $perpage=0, $completiontype=0, $showhistoric=false) {
         global $DB, $USER;
 
+        $companyid = iomad::get_my_companyid(context_system::instance());
+        $company = new company($companyid);
+
+        // Get the full company tree as we may need it.
+        $topcompanyid = $company->get_topcompanyid();
+        $topcompany = new company($topcompanyid);
+        $companytree = $topcompany->get_child_companies_recursive();
+        $parentcompanies = $company->get_parent_companies_recursive();
+
         $completiondata = new stdclass();
 
         // Create a temporary table to hold the userids.
@@ -320,6 +402,16 @@ class report_completion {
         } else {
             $completionsql = "";
         }
+
+        // Deal with parent company managers
+        if (!empty($parentcompanies)) {
+            $userfilter = " AND u.id NOT IN (
+                             SELECT userid FROM {company_users}
+                             WHERE companyid IN (" . implode(',', array_keys($parentcompanies)) . "))";
+        } else {
+            $userfilter = "";
+        }
+
         // Populate the temporary completion table.
         list($compdbman, $comptable) = self::populate_temporary_completion($tempcomptablename, $temptablename, 0, $showhistoric);
                 
@@ -348,8 +440,8 @@ class report_completion {
                 AND ue.userid = cc.userid
                 AND du.userid = u.id
                 AND d.id = du.departmentid
-                $completionsql
-                $searchinfo->sqlsort ";
+                $completionsql $userfilter
+                $searchinfo->sqlsort";
 
         $users = $DB->get_records_sql($selectsql.$fromsql, $searchinfo->searchparams, $page * $perpage, $perpage);
         $countusers = $DB->get_records_sql($countsql.$fromsql, $searchinfo->searchparams);
