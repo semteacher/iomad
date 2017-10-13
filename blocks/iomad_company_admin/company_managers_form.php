@@ -400,7 +400,7 @@ class company_managers_form extends moodleform {
                                             'usertypename' => $managertypes[$roletype]);
                         $event = \block_iomad_company_admin\event\company_user_unassigned::create(array('context' => context_system::instance(),
                                                                                                         'objectid' => $company->id,
-                                                                                                        'userid' => $adduser->id,
+                                                                                                        'userid' => $removeuser->id,
                                                                                                         'other' => $eventother));
                         $event->trigger();
                     }
