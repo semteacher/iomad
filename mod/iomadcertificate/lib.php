@@ -1767,7 +1767,7 @@ function iomadcertificate_cron_settoexpiry() {
             if (!$iomadcertificate = $DB->get_record('iomadcertificate', array('id' => $compuser->certid))) { 
                 continue;
             }
-            mtrace("FLYEASTWOOD: certificates will expire soon - user certissueid $compuser->certissueid");
+            mtrace("FLYEASTWOOD: certificates will expire soon - user certrecordid $compuser->certrecordid");
             if (!$iomadcertificateissues = $DB->get_record('iomadcertificate_issues', array('id' => $compuser->certrecordid))) {
                 continue;
             }        
@@ -1864,7 +1864,7 @@ function iomadcertificate_cron_expied() {
             if (!$iomadcertificate = $DB->get_record('iomadcertificate', array('id' => $compuser->certid))) { 
                 continue;
             }
-            mtrace("FLYEASTWOOD: certificates EXPIRIED - user certissueid $compuser->certissueid");
+            mtrace("FLYEASTWOOD: certificates EXPIRIED - user certrecordid $compuser->certrecordid");
             if (!$iomadcertificateissues = $DB->get_record('iomadcertificate_issues', array('id' => $compuser->certrecordid))) {
                 continue;
             }        
@@ -1876,7 +1876,7 @@ function iomadcertificate_cron_expied() {
                                   AND courseid = :courseid
                                   AND templatename = :templatename
                                   AND (sent IS NULL
-                                  OR sent > " . $runtime ,
+                                  OR sent > " . $runtime . ")",
                                   array('userid' => $compuser->userid,
                                         'courseid' => $compuser->courseid,
                                         'templatename' => 'cert_expire_user'))) {
