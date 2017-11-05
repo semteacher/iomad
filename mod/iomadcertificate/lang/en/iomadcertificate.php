@@ -206,9 +206,10 @@ $string['viewed'] = 'You received this certificate on:';
 $string['viewtranscript'] = 'View Certificates';
 $string['watermark'] = 'Watermark';
 $string['companycertify'] = 'This Certificate of Completion recognises that';
-$string['companydetails'] = 'has completed the web-based training program entitled';
+$string['companydetails'] = 'has successfully completed the web-based training program entitled';
 $string['companyscore'] = 'with an overall score of {$a}';
 $string['companydate'] = 'on {$a}';
+$string['companydatecap'] = 'On {$a}';
 
 //fleeastwood
 $string['expireemailcrontask'] = 'Iomadcertificate Email processing Cron Task';
