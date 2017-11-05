@@ -1778,8 +1778,8 @@ function iomadcertificate_cron_settoexpiry() {
                                   WHERE userid = :userid
                                   AND courseid = :courseid
                                   AND templatename = :templatename
-                                  AND (sent IS NULL
-                                  OR sent > " . $runtime . " - " . $compuser->expireemailreminde . " * 86400)",
+                                  AND ( ISNULL(sent) = 1
+                                  OR ( sent > " . $compuser->timecreated . " AND sent >= " . ($compuser->timeexpiried - $compuser->expireemailreminde*86400) . "))",
                                   array('userid' => $compuser->userid,
                                         'courseid' => $compuser->courseid,
                                         'templatename' => 'cert_expiry_warn_user'))) {
@@ -1875,8 +1875,8 @@ function iomadcertificate_cron_expied() {
                                   WHERE userid = :userid
                                   AND courseid = :courseid
                                   AND templatename = :templatename
-                                  AND (sent IS NULL
-                                  OR sent > " . $runtime . ")",
+                                  AND ( ISNULL(sent) = 1
+                                  OR ( sent > " . $compuser->timecreated . " AND sent >= " . $compuser->timeexpiried . "))",
                                   array('userid' => $compuser->userid,
                                         'courseid' => $compuser->courseid,
                                         'templatename' => 'cert_expire_user'))) {
