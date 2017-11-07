@@ -1721,33 +1721,31 @@ function iomadcertificate_cron_settoexpiry() {
 
     //TODO: for debug use AND (ci.timeexpiried - (ct.expireemailreminde+366)* 86400) < " . $runtime . ") and set task frequency to 2 min
     //TODO: for production use AND (ci.timeexpiried - ct.expireemailreminde * 86400) < " . $runtime . ") and set task frequency one per day
-    $allusers = $DB->get_records_sql("SELECT co.id as companyid, co.name, d.id, d.name, c.id as courseid, c.fullname, cc.timecompleted, ct.id as certid, ct.name, ct.validinterval, ct.valid2monthend, ct.expireemailreminde, ci.id as certrecordid, ci.timecreated, ci.timeexpiried, ci.code, u.id as userid, u.firstname, u.lastname, u.username, u.email
-                    FROM {iomad_courses} ic
-                    JOIN {local_iomad_track} cc
-                    ON (ic.courseid = cc.courseid)
-                    JOIN {iomadcertificate} ct
-                    ON (cc.courseid = ct.course
-                        AND ct.enablecertexpire > 0
-                        AND ct.expireemailnotify > 0) 
-                    JOIN {iomadcertificate_issues} ci   
-                    ON (ct.id = ci.iomadcertificateid
-                        AND ci.timeexpiried > 0 
-                        AND (ci.timeexpiried - ct.expireemailreminde * 86400) < " . $runtime . ") 
-                    JOIN {company_users} cu
+    $allusers = $DB->get_records_sql("SELECT ci.id as certrecordid, ci.timecreated, ci.timeexpiried, co.id as companyid, co.name, d.id, d.name, c.id as courseid, c.fullname, cc.timecompleted, ct.id as certid, ct.name, ct.validinterval, ct.valid2monthend, ct.expireemailreminde,  ci.code, u.id as userid, u.firstname, u.lastname, u.username, u.email
+                    FROM {iomadcertificate_issues} ci
+					JOIN {iomadcertificate} ct
+                    ON (ci.iomadcertificateid = ct.id
+						AND ct.enablecertexpire > 0
+                        AND ct.expireemailnotify > 0)
+					JOIN {course} c
+					ON (ct.course = c.id)
+					JOIN {company_users} cu
                     ON (ci.userid = cu.userid)
-                    JOIN {company} co
+					JOIN {company} co
                     ON (cu.companyid = co.id)
                     JOIN {department} d
                     ON (cu.departmentid = d.id)
-                    JOIN {course} c
-                    ON (ic.courseid = c.id)
-                    JOIN {user} u
-                    ON (cc.userid = u.id
+					JOIN {user} u
+                    ON (ci.userid = u.id
                         AND u.deleted = 0
                         AND u.suspended = 0)
-                    WHERE cc.id IN (
-                        SELECT max(id) FROM {local_iomad_track}
-                        GROUP BY userid,courseid)");
+					LEFT JOIN {course_completions} cc
+					ON (ci.userid = cc.userid
+						AND ct.course = cc.course) 
+					WHERE ci.timecreated > 0 AND ci.timeexpiried > 0
+						AND ci.timeexpiried > UNIX_TIMESTAMP(DATE('2017-10-30'))					
+                        AND (ci.timeexpiried - ct.expireemailreminde * 86400) < " . $runtime . "
+						AND ci.timeexpiried > " . $runtime . "");
 
     if (count($allusers) > 0){
         foreach ($allusers as $compuser) {
@@ -1818,33 +1816,30 @@ function iomadcertificate_cron_expied() {
 
     //TODO: for debug use AND (ci.timeexpiried - (ct.expireemailreminde+364)* 86400) < " . $runtime . ") and set task frequency to 2 min
     //TODO: for production use AND ci.timeexpiried < " . $runtime . ") and set task frequency one per day
-    $allusers = $DB->get_records_sql("SELECT co.id as companyid, co.name, d.id, d.name, c.id as courseid, c.fullname, cc.timecompleted, ct.id as certid, ct.name, ct.validinterval, ct.valid2monthend, ct.expireemailreminde, ci.id as certrecordid, ci.timecreated, ci.timeexpiried, ci.code, u.id as userid, u.firstname, u.lastname, u.username, u.email
-                    FROM {iomad_courses} ic
-                    JOIN {local_iomad_track} cc
-                    ON (ic.courseid = cc.courseid)
-                    JOIN {iomadcertificate} ct
-                    ON (cc.courseid = ct.course
-                        AND ct.enablecertexpire > 0
-                        AND ct.expireemail > 0) 
-                    JOIN {iomadcertificate_issues} ci   
-                    ON (ct.id = ci.iomadcertificateid
-                        AND ci.timeexpiried > 0 
-                        AND ci.timeexpiried < " . $runtime . ") 
-                    JOIN {company_users} cu
+    $allusers = $DB->get_records_sql("SELECT ci.id as certrecordid, ci.timecreated, ci.timeexpiried, ci.code, co.id as companyid, co.name, d.id, d.name, c.id as courseid, c.fullname, cc.timecompleted, ct.id as certid, ct.name, ct.validinterval, ct.valid2monthend, ct.expireemailreminde, u.id as userid, u.firstname, u.lastname, u.username, u.email
+                    FROM {iomadcertificate_issues} ci
+					JOIN {iomadcertificate} ct
+                    ON (ci.iomadcertificateid = ct.id
+						AND ct.enablecertexpire > 0
+                        AND ct.expireemailnotify > 0)
+					JOIN {course} c
+					ON (ct.course = c.id)
+					JOIN {company_users} cu
                     ON (ci.userid = cu.userid)
-                    JOIN {company} co
+					JOIN {company} co
                     ON (cu.companyid = co.id)
                     JOIN {department} d
                     ON (cu.departmentid = d.id)
-                    JOIN {course} c
-                    ON (ic.courseid = c.id)
-                    JOIN {user} u
-                    ON (cc.userid = u.id
+					JOIN {user} u
+                    ON (ci.userid = u.id
                         AND u.deleted = 0
-                        AND u.suspended = 0)
-                    WHERE cc.id IN (
-                        SELECT max(id) FROM {local_iomad_track}
-                        GROUP BY userid,courseid)");
+                        AND u.suspended = 0) 
+					LEFT JOIN {course_completions} cc
+					ON (ci.userid = cc.userid
+						AND ct.course = cc.course) 
+					WHERE ci.timecreated > 0 AND ci.timeexpiried > 0 
+						AND ci.timeexpiried > UNIX_TIMESTAMP(DATE('2017-10-30')) 
+                        AND ci.timeexpiried < " . $runtime . "");
 
     if (count($allusers) > 0){
         foreach ($allusers as $compuser) {
