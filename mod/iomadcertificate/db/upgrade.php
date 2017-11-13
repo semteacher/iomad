@@ -612,6 +612,30 @@ function xmldb_iomadcertificate_upgrade($oldversion=0) {
         // Iomadcertificate savepoint reached.
         upgrade_mod_savepoint(true, 2017052005, 'iomadcertificate');        
     }
+	
+	if ($oldversion < 2017052009) {
+		
+        // Define field setexpirysent to be added to data about issued iomadcertificates.
+        $table = new xmldb_table('iomadcertificate_issues');
+        $field = new xmldb_field('setexpirysent', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0);
+		
+		// Conditionally launch add field timeexpiried.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }		
+		
+        // Define field expiredsent to be added to data about issued iomadcertificates.
+        $table = new xmldb_table('iomadcertificate_issues');
+        $field = new xmldb_field('expiredsent', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0);		
+        
+		// Conditionally launch add field timeexpiried.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }		
+		
+		// Iomadcertificate savepoint reached.
+        upgrade_mod_savepoint(true, 2017052009, 'iomadcertificate');
+	}
     
     return true;
 }
