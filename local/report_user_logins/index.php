@@ -328,11 +328,7 @@ if ($sort == "name") {
 if (iomad::has_capability('block/iomad_company_admin:editallusers', $systemcontext)) {
     // Make sure we dont display site admins.
     // Set default search to something which cant happen.
-    $sqlsearch = "id!='-1'";
-    $siteadmins = explode(" ", $CFG->siteadmins);
-    foreach ($siteadmins as $siteadmin) {
-        $sqlsearch .= " AND id!='$siteadmin'";
-    }
+    $sqlsearch = "id!='-1' AND id NOT IN (" . $CFG->siteadmins . ")";
 
     // Get department users.
     $departmentusers = company::get_recursive_department_users($departmentid);
@@ -353,6 +349,15 @@ if (iomad::has_capability('block/iomad_company_admin:editallusers', $systemconte
         $sqlsearch .= " AND id in ($departmentids) ";
     } else {
         $sqlsearch = "1 = 0";
+    }
+
+    // all companies?
+    if ($parentslist = $company->get_parent_companies_recursive()) {
+        $sqlsearch .= " AND id NOT IN (
+                        SELECT userid FROM {company_users}
+                        WHERE companyid IN (" . implode(',', array_keys($parentslist)) ."))";
+    } else {
+        $companysql = "";
     }
 
     // Deal with search strings.
@@ -398,6 +403,16 @@ if (iomad::has_capability('block/iomad_company_admin:editallusers', $systemconte
     } else {
         $sqlsearch = "1 = 0";
     }
+
+    // all companies?
+    if ($parentslist = $company->get_parent_companies_recursive()) {
+        $sqlsearch .= " AND id NOT IN (
+                        SELECT userid FROM {company_users}
+                        WHERE companyid IN (" . implode(',', array_keys($parentslist)) ."))";
+    } else {
+        $companysql = "";
+    }
+
     // Deal with search strings.
     $searchparams = array();
     if (!empty($idlist)) {
@@ -447,20 +462,25 @@ if (!empty($loginfrom)) {
 if (!empty($loginto)) {
     $timesql .= " AND timecreated < :loginto ";
 }
-$totalcreations = $DB->count_records_sql("SELECT COUNT(id) FROM {logstore_standard_log}
-                                          WHERE eventname = :eventname
-                                          AND userid IN (". implode(',', array_values($userrecords)).")
-                                          $timesql",
-                                          array('eventname' => '\core\event\user_created',
-                                                'loginfrom' => $loginfrom,
-                                                'loginto' => $loginto));
-$totallogins = $DB->count_records_sql("SELECT COUNT(id) FROM {logstore_standard_log}
-                                       WHERE eventname = :eventname
-                                       AND userid IN (". implode(',', array_values($userrecords)).")
-                                       $timesql",
-                                       array('eventname' => '\core\event\user_loggedin',
-                                             'loginfrom' => $loginfrom,
-                                             'loginto' => $loginto));
+if (!empty($userrecords)) {
+    $totalcreations = $DB->count_records_sql("SELECT COUNT(id) FROM {logstore_standard_log}
+                                              WHERE eventname = :eventname
+                                              AND relateduserid IN (". implode(',', array_values($userrecords)).")
+                                              $timesql",
+                                              array('eventname' => '\core\event\user_created',
+                                                    'loginfrom' => $loginfrom,
+                                                    'loginto' => $loginto));
+    $totallogins = $DB->count_records_sql("SELECT COUNT(id) FROM {logstore_standard_log}
+                                           WHERE eventname = :eventname
+                                           AND userid IN (". implode(',', array_values($userrecords)).")
+                                           $timesql",
+                                           array('eventname' => '\core\event\user_loggedin',
+                                                 'loginfrom' => $loginfrom,
+                                                 'loginto' => $loginto));
+} else {
+    $totalcreations = 0;
+    $totallogins = 0;
+}
 
 if (empty($dodownload)) {
     echo $output->heading(get_string('userssummary', 'local_report_user_logins', array('usercount' => $usercount, 'totalcreations' => $totalcreations, 'totallogins' => $totallogins)));
@@ -637,14 +657,6 @@ function iomad_get_users_listing($sort='lastaccess', $dir='ASC', $page=0, $recor
                         WHERE timecreated <= :loginto
                         AND eventname = :loginevent2) "; 
         $params['loginevent2'] = '\core\event\user_loggedin'; 
-    }
-
-    // Warning: will return UNCONFIRMED USERS!
-    if (!is_siteadmin($USER->id)) {
-        // only show normal users.
-        $managertypesql = " AND cu.managertype = 0";
-    } else {
-        $managertypesql = "";
     }
 
     // all companies?

@@ -84,7 +84,7 @@ if ($toraw) {
 
 $systemcontext = context_system::instance();
 require_login(); // Adds to $PAGE, creates $output.
-iomad::require_capability('local/report_completion:view', $systemcontext);
+iomad::require_capability('local/report_license_usage:view', $systemcontext);
 
 // Set the companyid
 $companyid = iomad::get_my_companyid($systemcontext);
@@ -259,11 +259,7 @@ $dbsort = "";
 
 // Make sure we dont display site admins.
 // Set default search to something which cant happen.
-$sqlsearch = "id!='-1' $userfilter";
-$siteadmins = explode(" ", $CFG->siteadmins);
-foreach ($siteadmins as $siteadmin) {
-    $sqlsearch .= " AND id!='$siteadmin'";
-}
+$sqlsearch = "id!='-1' AND id NOT IN (" . $CFG->siteadmins . ") $userfilter";
 
 // Get department users.
 $departmentusers = company::get_recursive_department_users($departmentid);
@@ -325,7 +321,7 @@ if (!empty($userlist)) {
     if (!empty($from)) {
         // We need to get the total allocated up to that date.
         if (empty($license->program)) {
-            $numallocations = $DB->count_records_sql("SELECT COUNT (id) FROM {logstore_standard_log}
+            $numallocations = $DB->count_records_sql("SELECT COUNT(id) FROM {logstore_standard_log}
                                                       WHERE eventname = :eventname
                                                       AND objectid = :licenseid
                                                       AND timecreated < :fromtime
@@ -333,7 +329,7 @@ if (!empty($userlist)) {
                                                       array('eventname' => '\block_iomad_company_admin\event\user_license_assigned',
                                                             'licenseid' => $licenseid,
                                                             'fromtime' => $from));
-            $numunallocations = $DB->count_records_sql("SELECT COUNT (id) FROM {logstore_standard_log}
+            $numunallocations = $DB->count_records_sql("SELECT COUNT(id) FROM {logstore_standard_log}
                                                         WHERE eventname = :eventname
                                                         AND objectid = :licenseid
                                                         AND timecreated < :fromtime
@@ -356,7 +352,7 @@ if (!empty($userlist)) {
             } else {
                 $tempalloc = array();
                 foreach ($allocations as $allocation) {
-                    $tempalloc[$allocation->other] = $allocation;
+                    $tempalloc[$allocation->userid. '-' . $allocation->other] = $allocation;
                 }
                 $numallocations = count($tempalloc);
             }
@@ -374,7 +370,7 @@ if (!empty($userlist)) {
             } else {
                 $tempalloc = array();
                 foreach ($unallocations as $unallocation) {
-                    $tempalloc[$unallocation->other] = $unallocation;
+                    $tempalloc[$unallocation->userid. '-' . $unallocation->other] = $unallocation;
                 }
                 $numunallocations = count($tempalloc);
             }
@@ -397,14 +393,14 @@ if (!empty($userlist)) {
     // Get the number of allocations.
     if (empty($license->program)) {
         $sqlparams['eventname'] = '\block_iomad_company_admin\event\user_license_assigned';
-        $numallocations = $DB->count_records_sql("SELECT COUNT (id) FROM {logstore_standard_log}
+        $numallocations = $DB->count_records_sql("SELECT COUNT(id) FROM {logstore_standard_log}
                                                   WHERE eventname = :eventname
                                                   AND objectid = :licenseid
                                                   $timesql
                                                   AND userid IN (" . $departmentids . ")",
                                                   $sqlparams);
         $sqlparams['eventname'] = '\block_iomad_company_admin\event\user_license_unassigned';
-        $numunallocations = $DB->count_records_sql("SELECT COUNT (id) FROM {logstore_standard_log}
+        $numunallocations = $DB->count_records_sql("SELECT COUNT(id) FROM {logstore_standard_log}
                                                     WHERE eventname = :eventname
                                                     AND objectid = :licenseid
                                                     $timesql
@@ -453,6 +449,25 @@ if (!empty($userlist)) {
     $numallocations = 0;
     $total = 0;
 }
+
+// Display the current license overview.
+$table = new html_table();
+$table->id = 'LicenseOverviewTable';
+$table->head = array (get_string('licensename', 'block_iomad_company_admin'),
+                      get_string('licenseallocated', 'block_iomad_company_admin'),
+                      get_string('licenses', 'block_iomad_company_admin'),
+                      get_string('userlicenseused', 'block_iomad_company_admin'));
+$table->align = array ("left", "center", "center", "center");
+$licenseused = $DB->count_records('companylicense_users', array('licenseid' => $license->id, 'isusing' => 1));
+if (!empty($license->program)) {
+    $weighting = $DB->count_records('companylicense_courses', array('licenseid' => $licenseid));
+} else {
+    $weighting = 1;
+}
+
+$table->data[] = array('name' => $license->name, 'allocated' => $license->allocation / $weighting, 'remaining' => ($license->allocation - $license->used) / $weighting, 'used' => $licenseused / $weighting);
+
+echo html_writer::table($table);
 
 // Display the chart.
 $startseries = new core\chart_series(get_string('numstart', 'local_report_license_usage'), [$numstart]);
